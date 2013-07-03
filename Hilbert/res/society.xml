@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<s:society xmlns:s="http://www.mmarini.org/society-0-0-1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mmarini.org/society-0-0-1 society-0-0-1.xsd ">
+
+	<s:foodPopulationPreference>12</s:foodPopulationPreference>
+	<s:researchPopulationPreference>4</s:researchPopulationPreference>
+	<s:educationPopulationPreference>4</s:educationPopulationPreference>
+	<s:inactivePopulationPreference>80</s:inactivePopulationPreference>
+
+	<s:foodResourcePreference>50</s:foodResourcePreference>
+	<s:researchResourcePreference>1</s:researchResourcePreference>
+	<s:educationResourcePreference>1</s:educationResourcePreference>
+	<s:settlementResourcePreference>10</s:settlementResourcePreference>
+
+	<s:population>50</s:population>
+	<s:totalResource>6200</s:totalResource>
+
+	<s:preferedPopulationDensity>10</s:preferedPopulationDensity>
+	<s:resourceDeathRate>0.45</s:resourceDeathRate>
+
+	<s:individualFoodRequest>1</s:individualFoodRequest>
+	<s:minimumResourceFoodProductivity>0.02</s:minimumResourceFoodProductivity>
+	<s:maximumResourceFoodProductivity>2</s:maximumResourceFoodProductivity>
+	<s:baselineResourceFoodProductivity>5e-3</s:baselineResourceFoodProductivity>
+	<s:foodProductivityReference>87</s:foodProductivityReference>
+	<s:foodProductivitySigmaK>0.152</s:foodProductivitySigmaK>
+	<s:avgFoodProductivityCycleInterval>10</s:avgFoodProductivityCycleInterval>
+	<s:minimumIndividualFoodProductivity>12.5</s:minimumIndividualFoodProductivity>
+	<s:individualFoodProductivityRate>6.19</s:individualFoodProductivityRate>
+	<s:famineDeathRate>0.45</s:famineDeathRate>
+	<s:birthRate>0.1</s:birthRate>
+
+	<s:researchReference>99.5</s:researchReference>
+	<s:minimumResourceResearchProductivity>0.01</s:minimumResourceResearchProductivity>
+	<s:resourceResearchProductivityRate>3.4e-3</s:resourceResearchProductivityRate>
+	<s:minimumIndividualResearchProductivity>0.01</s:minimumIndividualResearchProductivity>
+	<s:individualResearchProductivityRate>1.7e-3</s:individualResearchProductivityRate>
+
+	<s:educationReference>0.000289</s:educationReference>
+	<s:minimumResourceEducationProductivity>0.01</s:minimumResourceEducationProductivity>
+	<s:resourceEducationProductivityRate>0.0664</s:resourceEducationProductivityRate>
+	<s:minimumIndividualEducationProductivity>0.5</s:minimumIndividualEducationProductivity>
+	<s:individualEducationProductivityRate>3.32</s:individualEducationProductivityRate>
+</s:society>

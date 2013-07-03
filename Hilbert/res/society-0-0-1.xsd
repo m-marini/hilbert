@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.mmarini.org/society-0-0-1"
+	elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema"
+	xmlns:s="http://www.mmarini.org/society-0-0-1">
+
+    <element name="society" type="s:SocietyType"></element>
+    
+	<complexType name="SocietyType">
+		<sequence>
+			<element name="foodPopulationPreference" type="double"></element>
+			<element name="researchPopulationPreference" type="double"></element>
+			<element name="educationPopulationPreference" type="double"></element>
+			<element name="inactivePopulationPreference" type="double"></element>
+			<element name="foodResourcePreference" type="double"></element>
+			<element name="researchResourcePreference" type="double"></element>
+			<element name="educationResourcePreference" type="double"></element>
+			<element name="settlementResourcePreference" type="double"></element>
+			<element name="population" type="int"></element>
+			<element name="totalResource" type="double"></element>
+			<element name="preferedPopulationDensity" type="double"></element>
+			<element name="resourceDeathRate" type="double"></element>
+			<element name="individualFoodRequest" type="double"></element>
+			<element name="minimumResourceFoodProductivity" type="double"></element>
+			<element name="maximumResourceFoodProductivity" type="double"></element>
+			<element name="baselineResourceFoodProductivity" type="double"></element>
+			<element name="foodProductivityReference" type="double"></element>
+			<element name="foodProductivitySigmaK" type="double"></element>
+			<element name="avgFoodProductivityCycleInterval" type="double"></element>
+			<element name="minimumIndividualFoodProductivity" type="double"></element>
+			<element name="individualFoodProductivityRate" type="double"></element>
+			<element name="famineDeathRate" type="double"></element>
+			<element name="birthRate" type="double"></element>
+			<element name="researchReference" type="double"></element>
+			<element name="minimumResourceResearchProductivity" type="double"></element>
+			<element name="resourceResearchProductivityRate" type="double"></element>
+			<element name="minimumIndividualResearchProductivity" type="double"></element>
+			<element name="individualResearchProductivityRate" type="double"></element>
+			<element name="educationReference" type="double"></element>
+			<element name="minimumResourceEducationProductivity" type="double"></element>
+			<element name="resourceEducationProductivityRate" type="double"></element>
+			<element name="minimumIndividualEducationProductivity" type="double"></element>
+			<element name="individualEducationProductivityRate" type="double"></element>
+		</sequence>
+	</complexType>
+</schema>

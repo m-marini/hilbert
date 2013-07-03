@@ -1,0 +1,680 @@
+\documentclass[a4paper,twoside]{article}
+\usepackage[italian]{babel}
+\usepackage[latin1]{inputenc}
+\begin{document}
+\title{Hilbert\thanks{ $ $Id$ $}}
+\author{Marco Marini}
+\maketitle
+\tableofcontents
+\pagebreak
+\section{Basi}
+\subsection{Entità e ambiente}
+Il progetto serve per verificare come un sistema basato su principi probabilistici evolve nel tempo.
+Il sistema è formato da varie entità che interagiscono tra loro.
+Le interazioni sono definite dal principio di causa ed effetto ma in senso probabilistico.
+Ovvero per ogni interazione viene definito il legame tra una causa cioè la situazione o stato del sistema e l'effetto cioà la variazione
+di stato del sistema.
+
+Definiamo meglio la causa, la causa è la probabilità che l'effetto venga applicato.
+La causa quindi è una funzione scalare dello stato del sistema, dipende quindi da ogni singola propriertà delle entità.
+In pratica non tutte le proprietà influenzano una causa e quindi solo u sottoinsieme delle proprietà partecipa a definire la causa.
+\begin{equation}
+	P(s, e) = F_e(s)=F_e(p_1, \dots, p_n) 
+\end{equation}
+
+Dove $P(s,e)$ è la probabilità che si verifiche l'effetto $e$ quando il sistema è nello stato $s$.
+La probabilità $P(s,e)$ è rappresentata dalla funzione $F_e$ dei valori delle singole proprietà del sistema $(p_1,\dots, p_n)$.
+
+L'effetto invece definisce come vengono modificate le proprietà delle varie entità per formare il nuovo stato del sistema.
+
+Vengono definite quindi un insieme di regole che determinano i cambi di stato.
+Ad ogni passo viene scelta una sequenza casuale di regole fino a quando una causa viene verificata.
+A questo punto viene applicato l'effetto associato e il sistema si sposta in un nuovo stato. 
+
+
+\section{Modello}
+Prendiamo come modello di simulazione un ambiente sociale. Cerchiamo e definiamo quindi le leggi che determinano lo sviluppo di una società.
+
+
+\subsection{Popolazione}
+La società è un insieme di individui che condividono un territorio, la conoscenza e le regole di interazioni tra individui. Il numero di di individui che compongono la popolazione è $N$.
+La popolazione si divide in base alle attività svolte: produttori alimentari, ricercatori, insegnanti e popolazione non attiva (bambini e anziani) rispettivamente:
+\begin{equation}
+	N_a, N_r, N_i, N_p
+\end{equation}
+avremoi quindi che 
+\begin{equation}
+	n=N_a + N_r + N_i + N_p
+\end{equation}
+
+La suddivisione delle attività avviente proporzionalmente con dei coefficiente di preferenza:
+\begin{equation}
+	\psi_a, \psi_r, \psi_i, \psi_p
+\end{equation}
+quindi
+\begin{eqnarray}
+	N_a = N\frac{\psi_a}{\psi_a + \psi_r + \psi_i + \psi_p}
+\\
+	N_r = N\frac{\psi_r}{\psi_a + \psi_r + \psi_i + \psi_p}
+\\
+	N_i = N\frac{\psi_i}{\psi_a + \psi_r + \psi_i + \psi_p}
+\\
+	N_p = N\frac{\psi_p}{\psi_a + \psi_r + \psi_i + \psi_p}
+\end{eqnarray}
+
+Poniamo che le preferenze siano costani nel tempo
+
+
+\subsection{Territorio}
+Il territorio ha una superficie finita $S$ che viene divisa in attività produttive alimentari, di ricerca tecnologica, di istruzione sociale e infine una superfice per le abitazioni rispettivamente.
+\begin{equation}
+	S_a, S_r, S_i, S_p
+\end{equation}
+
+Come per la suddivisione delle attività nella popolazione anche per il territorio avviente proporzionalmente con dei coefficiente di preferenza:
+\begin{equation}
+	\phi_a, \phi_r, \phi_i, \phi_p
+\end{equation}
+quindi
+\begin{eqnarray}
+	S_a = S\frac{\phi_a}{\phi_a + \phi_r + \phi_i + \phi_p}
+\\
+	S_r = S\frac{\phi_r}{\phi_a + \phi_r + \phi_i + \phi_p}
+\\
+	S_i = S\frac{\phi_i}{\phi_a + \phi_r + \phi_i + \phi_p}
+\\
+	S_p = S\frac{\phi_p}{\phi_a + \phi_r + \phi_i + \phi_p}
+\end{eqnarray}
+
+
+\subsubsection{Sovrapopolamento}
+Lo spazio riservato alla popolazione limita il numero di individui. In generale la sovrapopolamento genera agressività che sfocia in querra o criminalità. Questo determina una riduzione della popolazione.
+Se definiamo $\delta_s$ la densità della popolazione massima possiamo determinare il numero massimo di individui per non generare agressività:
+\begin{equation}
+	N_s=\delta_s S_p
+\end{equation}
+ possiamo definire la probabilità di morte per sovrapopolamento:
+\begin{equation}
+	P(morti)=\frac{N}{N_s}-1
+\end{equation}
+
+Se definamo $\omega_s$ il tasso di mortalità in caso di sovrapopolamento, il numero di morti per sovrapopolamento sarà un numero casuale tra 0 e $2N\omega_s-1$:
+\begin{equation}
+	M_s=rnd(2N\omega_s)
+\end{equation}
+
+Per permettere la sopravvivenza della popolazione in caso di sovrapopolamento dovrà essere:
+\begin{equation}
+	\omega_s < 0.5
+\end{equation}
+
+\subsection{Produzione del cibo}
+Ogni anno la popolazione crea il cibo che viene consumato per alimentarsi.
+Il cibo richiesto $C_r$ necessario  per l'alimentazione è dato da
+\begin{equation}
+	C_r = N \rho
+\end{equation}
+$\rho$ è la quantità di cibo necessaria procapite.
+
+Il coefficiente di alimentazione della popolazione $K_a$ e dato da
+\begin{equation}
+	K_a=\frac{C_p}{C_r}=\frac{C_p}{N \rho}
+\end{equation}
+dove $C_p$ è la quantità di cibo prodotta.
+
+Se $K_a>1$ avremo una sovrabbondanza di cibo mentre se $K_a<1$ avremo carestia.
+
+La produzione di cibo è limitata dal numero di persone dedicate all'agricoltura, dalla superficie dedicata
+alla produzione alimentare e i coefficienti di produttività per operatore e per superficie.
+\begin{equation}
+	C_p=min(N_a \pi_p, S_a \pi_s)
+\end{equation}
+
+Il coefficiente di produttività per superficie $\pi_s$ dipende dalle condizioni climatiche che sono casuali
+e dalla tecnologia. Il valore è limitato inferiormente ($\pi_{s0}$) dalla capacità di produrre cibo senza tecnologia
+e superiormente ($\pi_{s1}$) dalla quantità massima di energia solare ricevuta per superfice.
+
+ Supponiamo che il coefficiente vari con cicli medi di $t_a$ anni e che il valore sia distribuito normalmente intorno ad un valore medio dato da:
+\begin{equation}
+	\bar\pi_s=\bar\pi_s(T)=\pi_{s0}+(\pi_{s1}-\pi_{s0}) (1-e^{-\frac{T}{\tau_s}})=
+	\pi_{s1}-(\pi_{s1}-\pi_{s0}) e^{-\frac{T}{\tau_s}}=	
+\end{equation}
+dove $\tau_s$ è la quantità tecnologica di riferimento per la produzione di cibo.
+Possiamo formare una tabella che correla il valore di tecnologia $T$ con il valore di riferimento $\tau_s$ e 
+la percentuale di raggingimento tra il valore massimo e minimo del coefficiente $\pi_s$:
+
+\begin{tabular}{|r|r|}
+\hline
+	T & $\frac{\pi_s-\pi_{s0}}{\pi_{s1}-\pi_{s0}}$
+\\
+\hline
+	$0.693 \tau_s$ & $0.5$
+\\
+\hline
+	$\tau_s$ & $0.632$
+\\
+\hline
+	$2.3 \tau_s$ & $0.9$
+\\
+\hline
+	$4.61 \tau_s$ & $0.99$
+\\
+\hline
+\end{tabular}
+\\
+
+Secondo la legge di distribuzione normale la probabilità che il coefficiente $\pi_s$ sia $x$ è:
+\begin{equation}
+	P(\pi_s=x)=\frac{1}{\sqrt {2\pi}}e^{-(\frac{x-\bar\pi_s}{\sigma_s})^2}
+\end{equation}
+
+La probabilità invece di cambiare il coefficiente è
+\begin{equation}
+	P(cambio)=\frac{1}{t_a}
+\end{equation}
+
+Il coefficiente di produttivita individuale $\pi_p$ è controllato solo dalla tecnologia secondo la regola:
+\begin{equation}
+	\pi_p=\pi_{p0}+\pi'_pT
+\end{equation}
+dove $\pi_ {P0}$ è il coefficiente di produzione individuale a tecnologia nulla e $\pi'_p$ è il quanto tecnologico del coefficiente di produzione individuale.
+
+\subsubsection{Carestia}
+Quando il cibo prodotto scarseggia la popolazione muore di fame. Durante la carestia si può verificare una riduzione della popolazione.
+
+Definiamo il coefficiente di alimentazione della popolazione $K_a$ come il rapporto tra il cibo prodotto $C_p$ e il cibo richiesto $C_r$
+\begin{equation}
+	K_a=\frac{C_p}{C_r}
+\end{equation}
+
+Se $K_a<1$ avremo carestia e quindi riduzione della popolazione.
+La probabilità che ci sia una riduzione della popolazione è 
+\begin{equation}
+	P(morti)=1-K_a, K_a < 1
+\end{equation}
+Il numero di persone che moriranno $M_c$ sarà un numero casuale compreso tra 0 e $2N\omega_c$:
+\begin{equation}
+	M_c=min(rnd(2N\omega_c+1), N)
+\end{equation}
+
+Nel caso limite che non venga prodotto cibo $(C_p=0)$ avremo $K_a=0$, $P(carestia)=1$ e il numero medio di morti sarà  
+\begin{equation}
+	\bar M_c=\frac{2N\omega}{2}=N\omega_c
+\end{equation}
+quindi $\omega_c$ rappresenta il massimo valore medio del tasso di mortalità in caso di mancanza assoluta di cibo.
+
+In linea teorica  $\omega_c$ dovrebbe tendere a 1, in pratica $\omega_c$ verrà impostato ad un valore di poco inferiore a 0.5 permettendo a qualche individuo di sopravvivere ad una totale carestia.
+
+\subsubsection{Natalità}
+Se $K_a>1$ avremo una sovrabbondanza di cibo con conseguente probabilità di aumento della popolazione.
+La probabilità di aumento della popolazione dipende dalla quantità di cibo in eccesso:
+\begin{equation}
+	P(nascite)=\frac{C_p-C_r}{C_p}=1-\frac{1}{K_a}
+\end{equation}
+
+Le nascite sono limitate dal cibo in eccedenza e dalla capacità di riproduzione della popolazione. 
+Se $\rho$ è la quantità di cibo richiesto procapite allora il numero di individui che possono nascere con il cibo in eccedenza $A_c$ è:
+\begin{equation}
+A_c=\frac{C_p}{\rho}-N
+\end{equation}
+
+Mentre il numero di individui che possono nascere dalla popolazione $A_p$ è
+\begin{equation}
+	A_p=N \alpha
+\end{equation}
+con $\alpha$ il tasso di natalità della società.
+
+Il tasso di natalità della società e determinato dal numero di individui fertili, dalle regole sociali della società e dalla distribuzione dei maschi e femmine tra la popolazione
+fertile.
+
+Il numero di persone reali che nasceranno $A$ sarà invece un numero casuale tra 0 e $min(A_c, A_p)-1$
+\begin{equation}
+	A=min(A_c, A_p)
+\end{equation}
+
+\subsection{Tecnologia}
+Abbiamo visto che i parametri che controllano la produttivià alimentare dipendono dalla tecnologia $T$.
+Più la società si evolve tecnologicamente e maggiore è l'efficienza delle attività sociali.
+Il livello di tecnologia aumenta quando ci sono nuove scoperte o nuove invenzioni e quindi dipende
+dal settore della ricerca.
+Il mantenimento della tecnologia invece è legato alla distribuzione della conoscienza tra la popolazione.
+Per ottenere ciò sono necessarie una struttura e un'organizzazione della ricerca e dell'istruzione. Dipendono
+quindi dalle risorse dedicate alla ricerca e all'istruzione.
+
+Per semplificare il problema supponiamo che non ci siano specializzazioni dell'istruzione e che gli efetti siano uniformi su tutti i campi. In questo modo possiamo usare un solo indicatore del livello tecnologico.
+$T$ ha un range che va da 0 (nessuna tecnologica conosciuta) al limite superiore $\infty$ dove una persona è
+sufficiente a produrre infinità di cibo, di ricerca e di istruzione.
+Definiamo poi che gli incrementi di tecnologia siano finiti e pari a 1 quindi
+\begin{equation}
+\begin{array}{c}
+	T_{t+1}=T_t\pm \Delta T
+	\\
+	\\
+	 \Delta T = 1
+\end{array}
+\end{equation}
+
+\subsubsection{Ricerca}
+La probabilità di nuove scoperte o invenzioni di anno in anno è limitato dalla popolazione dedicata alla ricerca,
+dallo spazio dedicato alla ricerca (aree e risorse) e dal livello tencologico stesso
+\begin{equation}
+	P(scoperta) = P_r(N_p, S_p, T)
+\end{equation}
+
+Se $\vartheta_s$ è il coefficiente di produzione spaziale della ricerca, la quantità di ricerca producibile per la superfice $S_r$ è:
+\begin{eqnarray}
+	R_s=S_r\vartheta_s
+\\
+	\vartheta_s = \vartheta_{s0} + \vartheta'_s T
+\end{eqnarray}
+dove $\vartheta_{s0}$ è il coefficiente di produzione spaziale della ricerca in assenza di tecnologia e $\vartheta'_s$ il quanto spaziale di ricerca.
+
+In maniera simile possiamo definire la quantità di ricerca prodotta dalla popolazione $N_r$:
+\begin{eqnarray}
+	R_p=N_r\vartheta_p
+\\
+	\vartheta_p = \vartheta_{p0} + \vartheta'_p T
+\end{eqnarray}
+dove $\vartheta_{p0}$ è il coefficiente individuale della ricerca in assenza di tecnologia e $\vartheta'_s$ il quanto individuale di ricerca.
+
+Il livello di ricerca reale $R$ sarà il valore minimo tra i due valori:
+\begin{equation}
+	R = min(R_s, R_p)
+\end{equation}
+
+A questo punto possiamo definire la probabilità che in un anno ci sia una scoperta che incrementi il livello tecnologico:
+\begin{equation}
+	P(scoperta) = 1-e^{-\frac{R}{R_0}}
+\end{equation}
+dove $R_0$ è il livello di riferimento della ricerca.
+
+L'intervallo medio tra una scoperta e la sucessiva è dato da
+\begin{equation}
+	\label{eq:t_r}
+	\bar t_r=\frac{1}{P(scoperta)}
+	=\frac{1}{1-e^{-\frac{R}{R_0}}}\simeq \frac{R_0}{R}
+\end{equation}
+mentre $R_0$ e dato da:
+\begin{equation}
+	\label{eq:R_0}
+	R_0=\frac{1}{ln\left(\frac{\bar t_r}{\bar t_r-1}\right)}R_{\bar t_r}\simeq \bar t_r\cdot  R_{\bar t_r}
+\end{equation}
+
+La tabella di $R_0$ funzione di $R$ e $\bar t$ è
+\\
+\\
+\begin{tabular}{|l|l|}
+\hline
+$\bar t_r$ & $R_0$
+\\
+\hline
+2 & $1.44 R_2$ 
+\\
+\hline
+10 & $9.49 R_{10}$
+\\
+\hline 
+100 & $99.5 R_{100}$
+\\
+\hline
+\end{tabular}
+
+\subsubsection{Istruzione}
+Abbiamo già detto che il mantenimento del livello tecnologico è determinato dalla distribuzione della conoscenza nella popolazione.
+Una scoperta o innovazione che rimane confinata al solo ambito di ricerca non produce effetti sulla popolazione.
+Inoltre per mantenere il livello tecnologico è necessario che i nuovi individui ricevano la conoscenza da parte
+degli individui che la posseggono. E' quindi necessaria una struttura e organizzazione che trasmetta a tutti
+le conoscenze acquisite dalla società.
+Se i livelli di istruzione non sono adeguati lentamente la società perderà la conoscenza acquisita e il livello
+tecnologico si abbasserà.
+
+In maniera simile alla ricerca la probabilità di riduzione della tecnologia è determinato dalla popolazione dedicata all'istruzione, dallo spazio dedicato all'istruzione (aree e risorse) e dal livello tecnologico stesso.
+\begin{equation}
+	P(regressione)=P_i(N_i, S_i, T)
+\end{equation}
+
+Definiamo $\xi_s$ il coefficiente spaziale di istruzione. La quantità di istruzione producibile per la superfice $S_i$ sarà:
+\begin{eqnarray}
+	I_s=S_i \xi_s
+\\
+	\xi_s=\xi_{s0}+\xi'_s T
+\end{eqnarray}
+dove $\xi_{s0}$ è il coefficiente spaziale di istruzione in assenza di tecnologia e $\xi'_s$ il quanto spaziale di istruzione.
+
+In maniera simile definiamo la quantità di istruzione prodotta dalla popolazione $N_i$:
+\begin{eqnarray}
+	I_p=N_i \xi_p
+\\
+	\xi_p=\xi_{p0}+\xi'_p T
+\end{eqnarray}
+dove $\xi_{p0}$ è il coefficiente individuale di istruzione in assenza di tecnologia e $\xi'_s$ il quanto individuale di istruzione.
+
+Il livello di istruzione reale $I$ sara il valore minimo tra i due:
+\begin{equation}
+	I=min(I_s, I_p)
+\end{equation}
+
+La probabilità che in un anno ci sia una regressione tecnologica e determinato da:
+\begin{equation}
+	P(regressione) = e^{-\frac{I}{N I_0}}
+\end{equation}
+dove $I_0$ è il livello di riferimento dell'istruzione.
+
+L'intervallo medio tra una regressione e la successiva è:
+\begin{equation}
+	\bar t_i=\frac{1}{P(regressione)}=\frac{1}{e^{-\frac{I}{N I_0}}}
+\end{equation}
+mentre $I_0$ è dato da:
+\begin{equation}
+	\label{eq:I_0}
+	I_0=\frac{1}{N ln\left(\bar t_i\right)} I
+\end{equation}
+
+La tabella di $I_0$ funzione di $I$ e $\bar t_i$ è
+\\
+\\
+\begin{tabular}{|l|l|}
+\hline
+$\bar t_i$ & $I_0$
+\\
+\hline
+2 & $1.44 \frac{I_2}{N}$ 
+\\
+\hline
+10 & $0.434\frac{ I_{10}}{N}$
+\\
+\hline 
+100 & $0.217 \frac{I_{100}}{N}$
+\\
+\hline
+\end{tabular}
+
+\section{Dimensionamento dei parametri}
+Dimensioniamo ora i parametri di simulazione. Possiamo dividere in due gruppi logici i parametri: quelli interni
+alla società regolati dalla società stessa che quindi definiscono la politica sociale e quelli esterni alla società regolati dall'ambiente dove si sviluppa la società.
+
+\subsection{Politica sociale}
+Abbiamo due gruppi di parametri che regolano la politica sociale le preferenze della popolazione e le preferenze per il territorio.
+
+\subsubsection{Preferenze per la popolazione}
+Per definire la distribuzione della popolazione ipotiziamo un gruppo di 10 famiglie tipo: 2 adulti che devono mantenere 4 figli e 4 genitori. La popolazione totale sarà di 100 individui della quale quella produttiva sara di 20 individui.
+Dei 20 individui diciamo che 12 producono cibo, 4 dedicati alla ricerca e 4 dedicati all'istruzione.
+Quindi avremo
+\begin{equation}
+\begin{array}{l}
+	\psi_a=12
+\\
+	\psi_r=4
+\\
+	\psi_i=4
+\\
+	\psi_p=80
+\end{array}
+\end{equation} 
+
+\subsubsection{Preferenze per il territorio}
+Per definire la distribuzinoe della superfice per le attività dobbiamo fissare le preferenze del territorio.
+In ordine di priorità avremo il cibo, l'abitazione, l'istruzione e la ricerca.
+Quindi definiamo come riferimento la preferenza alla ricerca pari all'istruzione.
+La preferenza all'abitazione sarà 10 volte quella della ricerca mentre quella del cibo sarà 50 volte.
+Quindi
+\begin{equation}
+\begin{array}{l}
+	\phi_a=50
+\\
+	\phi_r=1
+\\
+	\phi_i=1
+\\
+	\phi_p=10
+\end{array}
+\end{equation} 
+
+\subsection{Ambiente}
+Vediamo ora tutti i parametri relativi all'ambiente
+
+\subsubsection{Territorio e popolazione iniziale}
+Definiamo la superfice totale del territorio e la popolazione iniziale della società:
+\begin{equation}
+\begin{array}{l}
+	S=6200
+\\
+	N=50
+\end{array}
+\end{equation}
+di conseguenza possiamo dedurre i valori per le attività:
+\begin{equation}
+\begin{array}{l}
+	S_a=5000
+\\
+	S_r=100
+\\
+	S_i=100
+\\
+	S_p=1000
+\\
+	N_a=6
+\\
+	N_r=2
+\\
+	N_i=2
+\\
+	N_p=40
+\end{array}
+\end{equation} 
+
+\subsubsection{Sovrapopolamento}
+Dobbiamo definire i due parametri di densità della popolazione $\delta_s$ e del tasso di mortalità $\omega_s$.
+Definiamo come limite massimo della popolazione $N_s=10000$ individui che distribuiti sulla superfice $S_p=1000$
+determinano una densità di 10 individui per unità di superfice
+Mentre il tasso di mortalità sarà
+\begin{equation}
+\begin{array}{l}
+	\delta_s = 10
+\\
+	\omega_s = 0.45 < 0.5
+\end{array}
+\end{equation}
+
+\subsubsection{Produzione del cibo}
+Fissiamo in una unità la quantità di cibo necessaria procapite $\rho$.
+
+La capacità di produzione di alimenti per la superfice $S_a=5000$ deve essere consentire minimo l'alimentazione di almento 100 individui e al massimo 10000.
+
+Per definire il valore di riferimento della tecnologia $\tau_s$, poniamo che si raggiunga il 90\% della produzione dopo 2000 anni e che il tasso di incremento della tecnologia sia di 1 livello ogni 10 anni, quindi:
+\[
+\begin{array}{l}
+	2.3\tau_s=\frac{2000}{10}=200
+	\\
+	\tau_s=\frac{200}{2.3}\simeq87
+\end{array}
+\]
+
+Lo scarto medio $\sigma_s$ deve invece assicurare che il 90\% dei valori della capacità di produzione dia una variazione di produttività intorno al 25\% del valore medio.
+Il 90\% dei valori deve stare nel range di $\pm 1.64 \sigma_s$, quindi
+\[
+\begin{array}{l}
+1.64 \sigma_s= 0.25 \bar \pi_s
+\\
+\sigma_s= 0.152 \bar \pi_s
+\end{array}
+\]
+
+Poniamo invece che i ciclio medio di produzione sia di $t_a=10$ anni. 
+
+Ultimi parametri da definire sono quelli relativi alla capacità produttiva degli individui.
+Per sopravvivere alle condizioni iniziali gli individui dediti alla produzione alimentare devono produrre per
+tutta la società vale a dire che i $N_a=6$ individui devono produrre per $N=50$ con un margine del 50\% quindi:
+\[
+\pi_{p0}=\frac{75}{6}=12.5
+\]
+
+Poniamo poi che la capacità produttiva di un individio possa raggiungere 100 volte il valore iniziale dopo 2000 anni, quindi
+\[
+\begin{array}{l}
+	\pi_p=\pi_{p0}+\pi'_p T
+	\\
+	\pi'_p=\frac{\pi_p-\pi_{p0}}{T}
+	\\
+	\pi'_p=\frac{99\cdot 12.5}{200}\simeq6.,19
+\end{array}
+\]
+
+ll coefficiente di mortalità per carestia sarà $\omega_c=0.45$
+
+Poniamo che il tasso di natalità sia costante nel tempo, che ci siano 2 generazioni viventi quindi per ogni coppia fertile ci siano 4 genitori anziani e 4 figli giovani, quindi la popolazione fertile sarà $\frac{2}{10}=0.2$ e che ogni coppia possa generare un figlio all'anno avremo quindi:
+\begin{displaymath}
+	\alpha=0.1
+\end{displaymath}
+
+Ricapitolando abbiamo:
+\begin{equation}
+\begin{array}{l}
+	\rho=1
+\\
+	\pi_{s0}=0.02
+\\
+	\pi_{s1}=2
+\\
+	\tau_s=87
+\\
+	\sigma_s= 0.152 \bar \pi_s
+\\
+	t_a = 10
+\\
+	\pi_{p0}=12.5
+\\
+	\pi'_p=6.19
+\\
+	\omega_c=0.45
+\\
+	\alpha=0.1
+\end{array}
+\end{equation}
+
+\subsubsection{Ricerca} 
+Per dimensionare i parametri di ricerca partiamo dai seguenti assunti:
+l'intervallo medio $\bar t_r$ tra una scoperta e la sucessiva deve essere minimo di 2 anni e massimo di 100 anni.
+quindi dalla (\ref{eq:R_0})
+\[
+\begin{array}{l}
+	R_0=\frac{1}{ln\left(\frac{\bar t_{r0}}{\bar t_{r0}-1}\right)} R_{r0}
+	=\frac{1}{ln\left(\frac{\bar t_{r1}}{\bar t_{r1}-1}\right)} R_{r1}
+	\\
+	\frac{R_{r0}}{R_{r1}}=\frac{ln\left(\frac{\bar t_{r0}}{\bar t_{r0}-1}\right)}{ln\left(\frac{\bar t_{r1}}{\bar t_{r1}-1}\right)}\simeq 69
+\end{array}
+\]
+
+Fissiamo quindi $R_{r0}=69$ e $R_{r1}=1$ di conseguenza sarà:
+\[
+	R_0=\frac{1}{ln\left(\frac{\bar t_{r0}}{\bar t_{r0}-1}\right)} R_{r0}\simeq99.5
+\]
+
+La superficie $S_r=100$ deve essere in grado di produrre minimo 1 unità di ricerca in assenza di tecnologia e massimo 
+69 unità di ricerca quando la tecnologia raggiunge il livello di $T=200$ unità quindi:
+\[
+\begin{array}{l}
+	\vartheta_{s0}=\frac{1}{100}=0.01
+	\\
+	\vartheta_{s}=\vartheta_{s0}+\vartheta'_s T
+	\\
+	\frac{69}{100}=0.69=0.01+\vartheta'_s 200
+	\\
+	0.68=\vartheta'_s 200
+	\\
+	\vartheta'_s\simeq0.0034
+\end{array}
+\]
+
+Poniamo che la popolazione $N_r = 200$ a tecnologica $T=0$ deve arrivare a produrre 1 unità di ricerca quindi
+$\vartheta_p=\frac{1}{200}=0.005$
+mentre a tecnologica $T=200$ deve arrivare a produrre 69 unità di ricerca quindi
+$\vartheta_p=\frac{69}{200}=0.345$.
+Avremo quindi
+\[
+\begin{array}{l}
+	\vartheta_{p0}=0.005
+	\\
+	\vartheta_{p}=\vartheta_{p0}+\vartheta'_p T
+	\\
+	0.345=0.005+\vartheta'_p 200
+	\\
+	0.34=\vartheta'_p 200
+	\\
+	\vartheta'_p\simeq0.0017
+\end{array}
+\]
+
+Riassumendo:
+\begin{equation}
+\begin{array}{l}
+	R_0=99.5
+	\\
+	\vartheta_{s0}=0.01
+	\\
+	\vartheta'_s=0.0034
+	\\
+	\vartheta_{p0}=0.005
+	\\
+	\vartheta'_p=0.0017
+\end{array}
+\end{equation}
+
+
+\subsubsection{Istruzione}
+L'intervallo tra una regressione e la sucessiva deve essere compreso tra $\bar t_{i0}=2$ anni a $N_{i0}=50$ e $\bar t_{i1}=100$ anni a $N_{i1}=10000$.
+Dalla (\ref{eq:I_0}) avremo quindi
+\[
+\begin{array}{l}
+	I_0=\frac{1}{N_0 ln(\bar t_{i0})}I_{i0}=\frac{1}{N_1 ln(\bar t_{i1})}I_{i1}
+	\\
+	\frac{I_{i1}}{I_{i0}} = \frac{N_1 ln(\bar t_{i1})}{N_0 ln(\bar t_{i0})}
+	= \frac{10000 ln(100)}{50 ln(2)} \simeq 1329
+	\\
+	I_{i0}=1, I_{i1} \simeq 1329
+	\\
+	I_0=\frac{1}{50 ln(2)} \simeq 0.0289
+\end{array}
+\]
+
+Poniamo ora che il livello minimo di istruzione $I_{i0}=1$ sia raggiunto con la superficie $S_i=100$ in assenza di tecnologia ($T=0$) e che il livello massimo $I_{i1}=1329$ sia raggiunto con tecnologia $T=200$:
+\[
+\begin{array}{l}
+	I=\xi_s S_i=(\xi_{s0}+\xi'_s T)S_i=\xi_{s0} S_i=1
+	\\
+	\xi_{s0}=\frac{1}{100}=0.01
+	\\
+	1329=(0,01+\xi'_s 200) 100
+	\\
+	\xi'_s=\frac{1328}{20000} = 0.0664
+\end{array}
+\]
+
+Poniamo ora che il livello minimo di istruzione $I_{i0}=1$ sia raggiunto con la popolazione $N_i=2$ in assenza di tecnologia ($T=0$) e che il livello massimo $I_{i1}=1329$ sia raggiunto con tecnologia $T=200$:
+\[
+\begin{array}{l}
+	I=\xi_p N_i=(\xi_{p0}+\xi'_p T) N_i=\xi_{p0} N_i=1
+	\\
+	\xi_{p0}=\frac{1}{2}=0.5
+	\\
+	1329=(0.5+\xi'_s 200) 2
+	\\
+	\xi'_s=\frac{1328}{400} = 3.32
+\end{array}
+\]
+
+Quindi:
+\begin{equation}
+\begin{array}{l}
+	I_0=0.0289
+	\\
+	\xi_{s0}=0.01
+	\\
+	\xi'_s= 0.0664
+	\\
+	\xi_{p0}=0.5
+	\\
+	\xi'_p= 3.32
+\end{array}
+\end{equation}
+\end{document}
