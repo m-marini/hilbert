@@ -1,0 +1,643 @@
+\documentclass[a4paper,twoside]{article}
+\usepackage[italian]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{inputenc}
+\begin{document}
+\title{Hilbert\thanks{ $ $Id$ $}}
+\author{Marco Marini}
+\maketitle
+\tableofcontents
+\pagebreak
+
+\section{Basi}
+
+Il progetto serve per verificare come il modello di un sistema sociale basato su principi probabilistici evolve nel tempo.
+Il sistema è formato da varie entità che interagiscono tra loro.
+Le interazioni sono definite da principi di causa ed effetto ma in senso probabilistico.
+Ovvero per ogni interazione vengono definite la probabilità tra una causa cioè la situazione o stato del sistema e l'effetto.
+L'effetto definisce come vengono modificate le proprietà delle varie entità per formare il nuovo stato del sistema.
+
+\section{Modello}
+
+Cerchiamo e definiamo quindi le leggi che determinano lo sviluppo di una società.
+
+\subsection{Popolazione}
+
+La società è un insieme di individui che condividono un territorio, la conoscenza e le regole di interazioni tra individui.
+Il numero di individui che compongono la popolazione è $N$.
+La popolazione si divide in base alle attività svolte: produttori alimentari, ricercatori, insegnanti e popolazione non attiva (bambini e anziani) rispettivamente:
+\begin{equation*}
+	N_f + N_r + N_e + N_i = N
+\end{equation*}
+
+La suddivisione delle attività avviene con la funzione di Boltzman (softmax) in base ai coefficienti di preferenza:
+\begin{equation*}
+	\varphi_f, \varphi_r, \varphi_e, \varphi_i
+\end{equation*}
+quindi
+\begin{eqnarray}{\label{eq:pop}}
+	N_f = N \frac{e^{\varphi_f}}{e^{\varphi_f}+e^{\varphi_r}+e^{\varphi_e}+e^{\varphi_i}} = N \alpha_f
+\\
+	N_r = N \frac{e^{\varphi_r}}{e^{\varphi_f}+e^{\varphi_r}+e^{\varphi_e}+e^{\varphi_i}} = N \alpha_r
+\\
+	N_e = N \frac{e^{\varphi_e}}{e^{\varphi_f}+e^{\varphi_r}+e^{\varphi_e}+e^{\varphi_i}} = N \alpha_e
+\\
+	N_i = N \frac{e^{\varphi_i}}{e^{\varphi_f}+e^{\varphi_r}+e^{\varphi_e}+e^{\varphi_i}} = N \alpha_i
+\end{eqnarray}
+
+Poniamo che le preferenze siano costanti nel tempo.
+
+Se sommiamo un qualsiasi valore a tutte le preferenze della popolazione o delle risorse rispettivamente nelle (\ref{eq:pop}) e (\ref{eq:res}), la ripartizione non varia.
+Questa proprietà ci permette di normalizzare le preferenze 
+facendo si che rientrino in un range di valori tra $ \pm \varphi_x$ ponendo
+\begin{eqnarray*}
+	\varphi_\mu' = \varphi_\mu - \varphi_o
+	\\
+	\varphi_o = \frac{\varphi_0 + \varphi_n}{2}
+	\\
+	\mu \in (f, r, a, i)
+\end{eqnarray*}
+dove $ \varphi_0 $ e $ \varphi_n $ sono rispettivamente la preferenza minima e massima.
+
+Altra caratteristica che la distanza tra due preferenze è in relazione con i rapporti dei coefficienti della popolazione ovvero:
+\begin{eqnarray*}
+	\frac{\alpha_\mu}{\alpha_\nu} = \frac{e^\varphi_\mu}{e^\varphi_\nu} = e^{(\varphi_\mu-\varphi_\nu)}
+	\\
+	\ln \left( \frac{\alpha_\mu}{\alpha_\nu} \right) = \varphi_\mu-\varphi_\nu
+\end{eqnarray*}
+
+Questo ci permette di calcolare i valori normalizzati delle preferenze dai coefficienti moltiplicativi
+\begin{eqnarray*}
+	\varphi_\mu = \ln \left( \frac{\alpha_\mu}{\alpha_o} \right)
+	\\
+	\alpha_o = \sqrt{\alpha_n \alpha_0}
+\end{eqnarray*}
+dove $ \alpha_0 $ e $ \alpha_n $ sono rispettivamente il coefficiente minimo e massimo.
+
+A titolo esemplificativo prendiamo una popolazione distribuita secondo una serie geometrica con rapporti di 1 a 2 ovvero
+\begin{align*}
+	\alpha_\mu = (\alpha_0, 2 \alpha_0, 4 \alpha_0, 8 \alpha_0) =
+	\\
+	= \left( \frac{1}{15}, \frac{2}{15}, \frac{4}{15}, \frac{8}{15} \right)
+	\\
+	\alpha_\mu \approx (0.0667, 0.133, 0.267, 0.533)
+	\\
+	\alpha_o = 2\sqrt{2}\alpha_0	
+	\\
+	\varphi_\mu = (-\ln(2\sqrt{2}),-\ln(\sqrt{2}), \ln(\sqrt{2}), \ln(2\sqrt{2}))
+	\\
+	\varphi_\mu	\approx (-1.04, -0.347, 0.347, 1.04)
+\end{align*}
+
+E' interessante avere le relazioni tra intervalli particolari:
+\begin{align*}
+	\alpha_\mu = 2 \alpha_\nu \Leftrightarrow \varphi_\mu = \varphi_\nu + \ln 2 \approx \varphi_\nu + 0.693
+	\\
+	\alpha_\mu = \sqrt{10} \alpha_\nu \Leftrightarrow \varphi_\mu = \varphi_\nu + \ln\sqrt{10} \approx \varphi_\nu + 1.15
+	\\
+	\alpha_\mu = 10 \alpha_\nu \Leftrightarrow \varphi_\mu = \varphi_\nu + \ln 10 \approx \varphi_\nu + 2.305
+	\\
+	\alpha_\mu = 100 \alpha_\nu \Leftrightarrow \varphi_\mu = \varphi_\nu + \ln 100 \approx \varphi_\nu + 4.61
+\end{align*}
+
+
+\subsection{Risorse}
+
+Il territorio ha una superficie finita che determina il limite di risorse disponibili per unità di tempo $R$.
+Queste vengono dedicate in attività produttive alimentari, di ricerca tecnologica, di istruzione sociale e infine per le abitazioni, rispettivamente:
+\begin{equation*}
+	R_f + R_r + R_e + R_s = R
+\end{equation*}
+
+Come per la suddivisione delle attività nella popolazione anche le risorse sono distribuite secondo la legge di Boltzman i coefficiente di preferenza:
+\begin{equation*}
+	\psi_f, \psi_r, \psi_e, \psi_s
+\end{equation*}
+quindi
+
+\begin{eqnarray}{\label{eq:res}}
+	R_f = R \frac{e^{\psi_f}}{e^{\psi_f}+e^{\psi_r}+e^{\psi_e}+e^{\psi_s}} = R \beta_f
+	\\
+	R_r = R \frac{e^{\psi_r}}{e^{\psi_f}+e^{\psi_r}+e^{\psi_e}+e^{\psi_s}} = R \beta_r
+	\\
+	R_e = R \frac{e^{\psi_e}}{e^{\psi_f}+e^{\psi_r}+e^{\psi_e}+e^{\psi_s}} = R \beta_e
+	\\
+	R_s = R \frac{e^{\psi_s}}{e^{\psi_f}+e^{\psi_r}+e^{\psi_e}+e^{\psi_s}} = R \beta_s
+\end{eqnarray}
+
+
+\subsection{Tecnologia}
+
+I processi produttivi della società hanno un rendimento che dipende dal livello tecnologico della società $T$.
+Più la società si evolve tecnologicamente e maggiore è l'efficienza delle attività.
+
+Per semplificare il problema supponiamo che non ci siano specializzazioni dell'istruzione e che gli effetti siano uniformi su tutti i campi.
+In questo modo possiamo usare un solo indicatore del livello tecnologico.
+
+L'efficenza $\eta$ dei processo è allora determinata da 
+
+\begin{align}\label{eq:tech}
+	\eta(T) = 1-e^{-T}
+	\\
+	T \ge 0	
+\end{align}
+
+Il livello di tecnologia aumenta quando ci sono nuove scoperte o invenzioni e quindi dipende
+dal settore della ricerca.
+
+Il mantenimento della tecnologia invece è legato alla distribuzione della conoscenza tra la popolazione.
+Per ottenere ciò sono necessarie strutture e organizzazioni per la ricerca e l'istruzione.
+
+$T$ ha un range che va da un limite inferiore (tecnologica base) ad $\infty$ quando tutte le risorse sono convertite in necessità senza alcuno spreco.
+
+Definiamo poi che gli incrementi di tecnologia siano finiti e che il livello tecnologico sia limitato inferiormente ad una soglia minima $T_0$.
+
+
+Dalla (\ref{eq:tech}) possiamo ottenere la funzione inversa
+\begin{equation*}
+	T(\eta) = -\ln(1 - \eta)
+\end{equation*}
+
+Il valore $1 - \eta$ rappresenta l'inefficenza o il coefficiente di perdita del processo.
+
+Anche per la tecnologia possiamo evidenziare le relazioni tra valori particolari di efficienza e livelli tecnologici:
+\begin{align*}
+	\eta=\frac{1}{100} \Leftrightarrow T = -\ln \frac{99}{100}
+	\approx 0.01005
+	\\
+	\eta=\frac{1}{10} \Leftrightarrow T = -\ln \frac{9}{10}
+	\approx 0.1054
+	\\
+	\eta=\frac{1}{2} \Leftrightarrow T = -\ln \frac{1}{2}
+	\approx 0.693
+	\\
+	\eta=\frac{9}{10} \Leftrightarrow T = -\ln \frac{1}{10}
+	\approx 2.996
+	\\
+	\eta=\frac{99}{100} \Leftrightarrow T = -\ln \frac{1}{100}
+	\approx 4.605
+\end{align*}
+
+Come si può vedere a livelli tecnologici molto bassi $ T < 0.1 $ si ha $\eta(T) \approx T$.
+
+Mentre per valori $ T > 4.605 $ l'efficenza supera il 99\% per cui con pochi margini di miglioramento.
+
+Vediamo ora le relazioni tra l'inefficienza e le variazioni  di tecnologia
+
+Per l'addizione abbiamo
+\begin{equation*}
+	1 - \eta(T + \Delta T)
+	= e^{-T - \Delta T}
+	= e^{-T} e^{-\Delta T}
+	= [1 - \eta(T)] e^{-\Delta T}
+\end{equation*}
+
+Per la moltiplicazione per un valore
+\begin{equation*}
+	1 - \eta(\lambda T)
+	= e^{-\lambda T}
+	= (e^{-T})^\lambda
+	= [1 - \eta(T)] ^{\lambda}
+\end{equation*}
+in particolare
+\begin{equation*}
+	1 - \eta((1 +\varepsilon) T)
+	= [1 - \eta(T)] ^{1 + \varepsilon}
+	= [1 - \eta(T)] \cdot [1 - \eta(T)]^{\varepsilon}
+\end{equation*}
+
+\subsection{Sovrappopolamento}
+
+Lo spazio riservato alla popolazione limita il numero di individui.
+In generale il sovrappopolamento genera aggressività che sfocia in guerra o criminalità. Questo determina una riduzione della popolazione.
+Se definiamo $\rho$ la densità della popolazione massima come rapporto tra il numero di individui e le risorse assegnate ad abitazione, possiamo determinare il numero massimo di individui per non generare aggressività:
+\begin{equation}\label{eq:Ns}
+	N_s = R_s \rho = \beta_s R \rho
+\end{equation}
+
+Il numero di morti è determinato da un processo di Poisson dove mediamente muoiono un numero di persone nell'unità di tempo pari ad una frazione dell'eccedenza del numero massimo di individui.
+La distribuzione di Poisson è data da
+\begin{equation}\label{eq:poisson}
+	P_\lambda(n) = \frac{\lambda ^{n}}{n!}e^{-\lambda }
+\end{equation}
+
+Quindi
+\begin{equation}\label{eq:overPop}
+	\lambda_o = \max(0, N - N_s) \frac{\Delta t}{\tau_o}
+	= \max \left( 0, \frac{N}{\tau_o} - \beta_s \frac{R \rho}{\tau_o} \right) \Delta t
+\end{equation}
+
+Con $\tau_s$ la costante di tempo della mortalità  in caso di sovrappopolamento.
+
+\subsection{Produzione del cibo}
+
+Ogni anno la popolazione consuma il cibo per alimentarsi.
+Il cibo richiesto $ D_r $ necessario  per l'alimentazione in un intervallo $ \Delta t $ è dato da
+\begin{equation*}
+	D_f = N \delta_f \Delta t
+\end{equation*}
+$\delta_f$ è la quantità di cibo per unità di tempo necessaria pro-capite.
+
+Ogni anno la popolazione crea il cibo che viene consumato per alimentarsi.
+La produzione di cibo dipende dal numero persone dedicate all'agricoltura, dalla superficie dedicata
+alla produzione alimentare.
+La produzione di cibo sarà comunque limitata dalla quantità massima di energia solare ricevuta per superficie dedicata al cibo.
+Il processo di produzione del cibo prevede che ogni individuo dedicato alla produzione di cibo trasformi una quantità $ \pi_p $ di risorse nell'unita di tempo limitata alle risorse dedicate alla produzione di cibo per unità di tempo.
+
+La quantità di risorse trasformate è
+\begin{equation*}
+	Q_f = \min(N_f \pi_f, R_f) \Delta t
+	= \min(N_f \pi_f, \beta_f R) \Delta t
+\end{equation*}
+
+La quantità di cibo prodotta dipende invece dall'efficienza $ \eta(T) $ del processo determinata dal livello tecnologico della società $ T $, quindi
+\begin{equation*}
+	P_f = \eta(T) Q_r = \eta(T) \min(N_f \pi_f, \beta_f R) \Delta t
+\end{equation*}
+
+Il rapporto tra il cibo prodotto e il cibo richiesto determina il coefficiente di alimentazione della popolazione $K_f$
+\begin{align*}
+	K_f = \frac{P_f}{D_f} = \frac{\eta(T) \min(N_f \pi_f, \beta_f R) \Delta t}{N \delta_f \Delta t} = 
+	\\
+	= \eta(T) \min \left( \frac{N_f \pi_f}{N \delta_f}, \frac{\beta_f R}{N \delta_f} \right)
+\end{align*}
+\begin{equation} \label{eq:Kf}
+	K_f = \eta(T) \min \left( \frac{\alpha_f \pi_f}{\delta_f}, \frac{\beta_f R}{N \delta_f} \right)
+\end{equation}
+
+Se $ K_f<1 $ avremo che il cibo non è sufficiente alla sopravvivenza della popolazione che provoca morte per fame.
+
+Se $K_f>1$ avremo invece  una sovrabbondanza di cibo con conseguente probabilità di aumento della popolazione.
+
+Il rapporto tra cibo prodotto e richiesto rapportato al singolo individuale per unità di tempo è
+\begin{equation*}
+	K_{fi} = \eta(T) \frac{\alpha_f \pi_f}{\delta_f}
+\end{equation*}
+
+Per permettere alla popolazione di sopravvivere ed evolversi deve essere
+\begin{align*}
+	K_{fi} \ge 1
+	\\
+	\eta(T) \frac{\alpha_f \pi_f}{\delta_f} \ge 1
+	\\
+	\pi_f \ge \frac{\delta_f}{\alpha_f \eta(T)}
+\end{align*}
+
+Al minimo di efficienza dobbiamo avere quindi
+\begin{equation} \label{eq:pif}
+	\pi_f \ge \frac{\delta_f}{\alpha_f \eta(T_0)}
+\end{equation}
+
+Il rapporto tra cibo prodotto e richiesto limitato dalle risorse per unità di tempo è
+\begin{align*}
+	K_{fi} = \eta(T) \frac{R_f}{N \delta_f}
+\end{align*}
+
+Anche per questo il deve sussistere la relazione
+\begin{align*}
+	K_{fi} \ge 1
+	\\
+	\eta(T) \frac{R_f}{N \delta_f} \ge 1
+	\\
+	R_f \ge N \frac{\delta_f}{\eta(T)}
+\end{align*}
+
+Se la popolazione massima al minimo dell'efficienza deve essere $ N_0 $ avremo 
+\begin{align*}
+	R_{f0} \ge N_0 \frac{\delta_f}{\eta(T_0)}
+\end{align*}
+
+Se la popolazione massima al massimo dell'efficienza deve essere $ N_x $ avremo 
+\begin{align*}
+	R_{fx} \ge N_x \delta_f
+\end{align*}
+quindi
+\begin{equation}\label{eq:Rf}
+	R_f \ge \max \left(N_0 \frac{\delta_f}{\eta(T_0)}, N_x \delta_f \right)
+\end{equation}
+
+\subsubsection{Carestia}
+
+Quando il cibo prodotto scarseggia la popolazione muore di fame. Durante la carestia si può verificare una riduzione della popolazione.
+
+Il numero di morti per fame $ d_s $ è un processo casuale con distribuzione di Poisson (\ref{eq:poisson}) con numero atteso di morti pari a 
+\begin{align*}
+	P_{\lambda_s}(d_s)
+	\\	
+	\lambda_s = N \max(1 - K_f, 0) \frac{\Delta t}{\tau_s} =
+	\\
+	= N \max \left[ 1 - \eta(T) \frac{\min \left( N_f \pi_f,  \beta_f R \right)}{N \delta_f}, 0 \right] \frac{\Delta t}{\tau_s}
+\end{align*}
+\begin{equation}\label{eq:starv}
+	\lambda_s = \max \left[ \frac{N}{\tau_s} - \eta(T) \min \left( N_f \frac{\pi_f}{\delta_f \tau_s}, \beta_f \frac{R}{\delta_f \tau_s} \right), 0 \right] \Delta t
+\end{equation}
+
+Con $\tau_s$ essere la costante di tempo della mortalità per fame.
+
+\subsubsection{Natalità}
+
+Quando c'è una sovrabbondanza di cibo esiste la probabilità di aumento della popolazione. L'aumento della popolazione dipende dalla quantità di cibo in eccesso e dal tasso di natalità pro-capite.
+Anche il numero di nascite $ n_b $ è un processo casuale con distribuzione di Poisson.
+\begin{equation*}
+	P_{\lambda_b}(n_b)
+\end{equation*}
+
+\begin{equation}{\label{eq:birth}}
+	\lambda_b = N \max(K_f - 1, 0) \frac{\Delta t}{\tau_b}
+	= \max \left[ \eta(T) \min \left( N_f \frac{\pi_f}{\delta_f \tau_b}, \beta_f \frac{R}{\delta_f \tau_b} \right) - \frac{N}{\tau_b}, 0 \right] \Delta t
+\end{equation}
+
+con $\tau_b$ la costante di tempo della natalità.
+
+\subsection{Ricerca}
+
+La probabilità di nuove scoperte o invenzioni di anno in anno è limitato dalla popolazione, dalle risorse dedicata alla ricerca e dal livello tecnologico.
+
+Ogni ricercatore riesce ad utilizzare $ \pi_r $ risorse per unità di tempo limitate totalmente da $ R_r $.
+\begin{equation*}
+	Q_r = \min(N_r \pi_r, R_r) \Delta t
+\end{equation*}
+
+Queste risorse vengono convertite in quantità di ricerca pari a
+\begin{equation*}
+	P_r = \eta(T) Q_r = \eta(T) \min(N_r \pi_r, R_r) \Delta t
+\end{equation*}
+
+L'avanzamento tecnologico avviene con un processo casuale con distribuzione di Poisson (\ref{eq:poisson}) a quantità discrete multiple di $ \gamma $ il cui costo è $ \delta_r $ quindi
+\begin{eqnarray*}
+	\Delta T = n_r \gamma
+	\\
+	P_{\lambda_r}(n_r)
+	\\
+	\lambda_r = \frac{P_r}{\delta_r}\eta(T)=
+	\\
+	= \eta(T_0) \min \left( N_r \frac{\pi_r}{\delta_r}, \frac{R_r}{\delta_r} \right)
+\end{eqnarray*}
+\begin{equation}\label{eq:research}
+	\lambda_r = \eta(T) \min \left( N_r \frac{\pi_r}{\delta_r}, \beta_r \frac{R}{\delta_r} \right) \Delta t
+\end{equation}
+
+La frequenza di salti limitata dal numero di ricercatori nell'unità di tempo risulta essere
+\begin{align*}
+	f_{ri}(T) = N \eta(T) \frac{\alpha_r \pi_r}{\delta_r}
+\end{align*}
+
+Se $ f_{ri}(T_0) $ è la frequenza di salti alla minima efficienza abbiamo
+\begin{equation}\label{eq:pir}
+	\pi_r = f_{ri}(T_0) \frac{\delta_r}{N \eta(T_0) \alpha_r}
+\end{equation}
+
+La frequenza di salti limitata dalle risorse nell'unità di tempo risulta essere
+\begin{align*}
+	f_{rr}(T) = \eta(T) \frac{R_r}{\delta_r}
+\end{align*}
+da cui
+\begin{equation}\label{eq:Rr}
+	R_r = \delta_r \max \left( \frac{f_{rr}(T_0)}{\eta(T_0)}, f_{rr}(\infty) \right)
+\end{equation}
+
+\subsection{Istruzione}
+
+Abbiamo già detto che il mantenimento del livello tecnologico è determinato dalla distribuzione della conoscenza nella popolazione.
+Una scoperta o innovazione che rimane confinata al solo ambito di ricerca non produce effetti sui processi produttivi.
+Inoltre per mantenere il livello tecnologico è necessario che i nuovi individui ricevano la conoscenza da parte di quelli che la posseggono.
+Sono quindi necessarie educatori e strutture che trasmettano a tutti le conoscenze acquisite.
+Se i livelli di istruzione non sono adeguati lentamente la società perderà la conoscenza acquisita e il livello tecnologico si abbasserà.
+La riduzione della tecnologia è determinato dalla popolazione e dalle risorse dedicate all'istruzione e dal livello tecnologico.
+
+Come per i processi di produzione del cibo possiamo calcolare il rapporto tra l'educazione prodotta e quella richiesta per mantenere il livello tecnologico.
+\begin{align*}
+	K_e = \eta(T) \frac{\min(N_e \pi_e, R_e)}{N \delta_e}
+\end{align*}
+\begin{equation}{\label{eq:ke}}
+	K_e = \eta(T) \min \left( \frac{N_e \pi_e}{N \delta_e}, \frac{R_e}{N \delta_e} \right)
+\end{equation}
+
+Il tasso di regressione della tecnologia è determinato dalla quantità di individui non istruiti $ N_n $ che assumiamo essere un processo casuale con distribuzione di Poisson
+
+\begin{align*}
+	P_{\lambda_e}(N_n)
+	\\
+	\Delta T = -T \min \left[ \max \left(0, \frac{N_n}{N} \right), 1 \right]
+	\\
+	\lambda_e = N \max(0, 1 - K_e) \frac{\Delta t}{\tau_e}
+\end{align*}
+\begin{equation}\label{eq:edu}
+	\lambda_e = \max \left[ 0, \frac{N}{\tau_e} - \eta(T) \min \left( N_e \frac{\pi_e}{\delta_e \tau_e}, \beta_e \frac{R}{\delta_e \tau_e} \right) \right] \Delta t
+\end{equation}
+Con $\tau_e$ essere la costante di tempo dell'educazione.
+
+Il tasso di istruzione limitato dagli educatori è
+\begin{align*}
+	K_{ei}(T) = \eta(T) \frac{\alpha_e \pi_e}{\delta_e}
+\end{align*}
+
+Per non regredire è necessario che
+\begin{align*}
+	K_{ei}(T) \ge 1
+	\\
+	\eta(T) \frac{\alpha_e \pi_e}{\delta_e} \ge 1
+	\\
+	\pi_e \ge \frac{\delta_e}{\alpha_e \eta(T)}
+\end{align*}
+che nel caso peggiore di minima efficienza è
+\begin{equation}\label{eq:pie}
+	\pi_e \ge \frac{\delta_e}{\alpha_e \eta(T_0)}
+\end{equation}
+
+Il tasso di istruzione limitato dalle risorse è
+\begin{align*}
+	K_{er}(T) = \eta(T) \frac{R_e}{N \delta_e}
+\end{align*}
+Anche per questo vale
+\begin{align*}
+	K_{er}(T) \ge 1
+	\\
+	\eta(T) \frac{R_e}{N \delta_e} \ge 1
+	\\
+	R_e \ge N \frac{\delta_e}{\eta(T)}
+\end{align*}
+quindi
+\begin{equation}\label{eq:Re}
+	R_e \ge \delta_e \max \left( \frac{N_0}{\eta(T_0)}, N_x \right)
+\end{equation}
+
+
+\section{Esempio}
+
+Dimensioniamo ora i parametri di simulazione.
+Abbiamo due gruppi di parametri che regolano la politica sociale: le preferenze della popolazione e le preferenze per il territorio.
+
+\subsection{Popolazione}
+
+Per definire la distribuzione della popolazione ipotizziamo un gruppo iniziale di 2 famiglie tipo: 2 adulti che devono mantenere 4 figli e 4 genitori.
+La popolazione totale è di 20 individui della quale quella produttiva è di 4 individui.
+Dei 4 produttivi poniamo che 2 producono cibo, un ricercatore e un educatore.
+
+Quindi avremo
+\begin{align*}
+	N = 20
+	\\
+	N_f = 2
+	\\
+	N_r = 1	
+	\\
+	N_e = 1
+	\\
+	N_i = 16
+\end{align*}
+i vari coefficienti sono:
+\begin{align*}
+	\alpha_f = \frac{1}{10}
+	\\
+	\alpha_r = \frac{1}{20}
+	\\
+	\alpha_e = \frac{1}{20}
+	\\
+	\alpha_i = \frac{4}{5}
+	\\
+	\alpha_0 = \sqrt{\frac{1}{20} \frac{4}{5}} = \frac{1}{5}
+	\\
+	\varphi_f = \ln \frac{1}{10} \frac{5}{1} \approx -0.693
+	\\
+	\varphi_r = \ln \frac{1}{20} \frac{5}{1} \approx -1.386
+	\\
+	\varphi_e = \ln \frac{1}{20} \frac{5}{1} \approx -1.386
+	\\
+	\varphi_i = \ln \frac{4}{5} \frac{5}{1} \approx 1.386
+\end{align*}
+
+\subsection{Tecnologia}
+
+Partiamo con un livello minimo di efficienza pari a
+\begin{align*}
+	\eta(T_0) = \frac{1}{100}
+	\\
+	T_0 \approx \frac{1}{100} = 0.01
+\end{align*}
+questo ci permette di avere l'efficienza massima teorica pari a 100 volte quella minima.
+
+\subsection{Simulazione}
+
+I parametri dipendenti dal tempo saranno annuali mentre la simulazione sarà a cicli trimestrali quindi avremo che l'intervallo di tempo è
+\begin{align*}
+	\Delta t = 0.25
+\end{align*}
+
+Poniamo altresì che le velocità di reazione di tutti i processi sia pari a 2 anno quindi poniamo le costanti di tempo
+\begin{align*}
+	\tau_o = \tau_s = \tau_b = \tau_e = \frac{2}{5} = 0.4
+\end{align*}
+
+\subsection{Sovrappopolamento}
+
+Poniamo che la massima popolazione limitata dalle risorse abitative sia 10000 unità e poniamo la densità pari ad un individuo per risorsa abitativa, quindi
+\begin{align*}
+	\rho = 1
+	\\
+	\rho R_s = 10000
+	\\
+	R_s = 10000
+\end{align*}
+
+\subsection{Cibo}
+
+Poniamo che la richiesta di cibo pro-capite sia di una risorsa all'anno
+\begin{align*}
+	\delta_f = 1
+\end{align*}
+
+Dalla (\ref{eq:pif}) abbiamo
+\begin{align*}
+	\pi_f > \frac{\delta_f}{ \alpha_f \eta(T_0)} = \frac{1}{0.1 \cdot 0.01} = 1000
+\end{align*}
+
+Poniamo
+\begin{align*}
+	\pi_f = 1100
+\end{align*}
+con un margine quindi del 10\% per l'incremento della popolazione.
+
+Dalla (\ref{eq:Rf}) abbiamo che
+\begin{align*}
+	R_f \ge \max \left(20 \frac{1}{0.01}, 10000 \right)
+	\\
+	R_f \ge 10000
+\end{align*}
+
+\subsection{Ricerca}
+
+Per la ricerca poniamo che gli incrementi di tecnologia siano
+\begin{align*}
+	\gamma = \frac{1}{100} = 0.01
+\end{align*}
+al costo di
+\begin{align*}
+	\delta_r = 1
+\end{align*}
+
+Poniamo anche che i salti tecnologici avvengano mediamente ogni 10 anni nel caso di efficienza minima per cui dalla (\ref{eq:pir}) abbiamo
+\begin{align*}
+	f_{ri}(T_0) = 0.1
+	\\
+	\pi_r = 0.1 \frac{1}{20 \cdot 0.01 \cdot 0.05} = 10
+\end{align*}
+
+Mentre ponendo che la frequenza massima di salti limitata dalle risorse sia di uno ogni anno, dalla (\ref{eq:Rr}) abbiamo
+\begin{align*}
+	f_{rr}(T_0) = 0.1
+	\\
+	f_{rr}(\infty) = 1
+	\\
+	R_r = \max \left( \frac{0.1}{0.01}, 1 \right) = 10
+\end{align*}
+
+\subsection{Istruzione}
+
+Come per  i precedenti processi poniamo che la richiesta individuale di istruzione sia
+\begin{align*}
+	\delta_e = 1
+\end{align*}
+
+Dalla (\ref{eq:pie}) otteniamo
+\begin{align*}
+	\pi_e \ge \frac{1}{0.05 \cdot 0.01}
+	\\
+	\pi_e \ge 2000
+\end{align*}
+
+Mentre dalla (\ref{eq:Re})
+\begin{align*}
+	R_e \ge \max \left( \frac{20}{0.01}, 10000 \right)
+	\\
+	R_e \ge 10000
+\end{align*}
+
+\subsection{Risorse}
+
+Ricapitolando le risorse dovranno essere
+\begin{align*}
+	R_f = 10000
+	\\
+	R_r = 10
+	\\
+	R_e = 10000
+	\\
+	R_s = 10000
+\end{align*}
+e dalla (\ref{eq:res}) otteniamo
+\begin{align*}
+	\beta_f = \beta_e = \beta_s = \frac{1000}{3001}
+	\\
+	\beta_r = \frac{1}{3001}
+	\\
+	\beta_o = \sqrt{\frac{1}{3001} \frac{1000}{3001}}=\frac{10}{3001} \sqrt{10}
+	\\
+	\psi_f = \psi_e = \psi_s = \ln \frac{1000}{3001} \frac{3001}{100} \sqrt{10}
+	=  \ln 10 \sqrt{10} \approx 3.454
+	\\
+	\psi_r = \ln \frac{1}{3001} \frac{3001}{100} \sqrt{10}
+=  \ln \frac{\sqrt{10}}{100} \approx -3.454
+\end{align*}
+\end{document}

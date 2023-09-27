@@ -1,0 +1,27 @@
+---
+version: "0.1"
+
+seed: 1234
+timeInterval: 0.25
+minTechnology: 0.01
+resources: 30010
+
+overSettlement:
+  density: 10
+  deathTimeConstant: 2
+
+foodProduction:
+  productivity: 1100
+  demand: 1
+  deathTimeConstant: 0.4
+  birthTimeConstant: 0.4
+
+research:
+  productivity: 10
+  cost: 1
+  quantum: 0.01
+
+education:
+  productivity: 2000
+  demand: 1
+  timeConstant: 0.4

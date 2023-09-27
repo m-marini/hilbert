@@ -1,0 +1,8 @@
+/.idea/*
+/target/*
+/hilbert.dat
+/docs/*.aux
+/docs/*.log
+/docs/*.toc
+/docs/*.synctex.gz
+/hilbert.iml

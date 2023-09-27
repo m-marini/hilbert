@@ -1,0 +1,78 @@
+---
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Resources
+type: object
+properties:
+  version:
+    const: "0.1"
+  seed:
+    multipleOf: 1
+    minimum: 0
+  minTechnology:
+    minimum: 0
+  timeInterval:
+    exclusiveMinimum: 0
+  resources:
+    exclusiveMinimum: 0
+  overSettlement:
+    type: object
+    properties:
+      density:
+        exclusiveMinimum: 0
+      deathTimeConstant:
+        exclusiveMinimum: 0
+    required:
+      - density
+      - deathTimeConstant
+  foodProduction:
+    type: object
+    properties:
+      productivity:
+        exclusiveMinimum: 0
+      demand:
+        exclusiveMinimum: 0
+      deathTimeConstant:
+        exclusiveMinimum: 0
+      birthTimeConstant:
+        exclusiveMinimum: 0
+    required:
+      - productivity
+      - demand
+      - deathTimeConstant
+      - birthTimeConstant
+  education:
+    type: object
+    properties:
+      productivity:
+        exclusiveMinimum: 0
+      demand:
+        exclusiveMinimum: 0
+      timeConstant:
+        exclusiveMinimum: 0
+    required:
+      - productivity
+      - demand
+      - timeConstant
+  research:
+    type: object
+    properties:
+      productivity:
+        exclusiveMinimum: 0
+      cost:
+        exclusiveMinimum: 0
+      quantum:
+        minimum: 0
+    required:
+      - productivity
+      - cost
+      - quantum
+required:
+  - version
+  - timeInterval
+  - minTechnology
+  - resources
+  - overSettlement
+  - foodProduction
+  - education
+  - research
+

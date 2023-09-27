@@ -1,0 +1,12 @@
+---
+version: "0.1"
+population: 20
+farmerPrefs: -0.693
+researcherPrefs: -1.386
+educatorPrefs: -1.386
+inactivePrefs: 1.386
+foodPrefs: 3.454
+researchPrefs: -3.454
+educationPrefs: 3.454
+settlementPrefs: 3.454
+technology: 0.01

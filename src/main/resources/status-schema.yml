@@ -1,0 +1,41 @@
+---
+$schema: https://json-schema.org/draft/2020-12/schema
+title: Resources
+type: object
+properties:
+  version:
+    const: "0.1"
+  population:
+    multipleOf: 1
+    minimum: 1
+  farmerPrefs:
+    type: number
+  researcherPrefs:
+    type: number
+  educatorPrefs:
+    type: number
+  inactivePrefs:
+    type: number
+  foodPrefs:
+    type: number
+  researchPrefs:
+    type: number
+  educationPrefs:
+    type: number
+  settlementPrefs:
+    type: number
+  technology:
+    type: number
+required:
+  - version
+  - population
+  - farmerPrefs
+  - researcherPrefs
+  - educatorPrefs
+  - inactivePrefs
+  - foodPrefs
+  - researchPrefs
+  - educationPrefs
+  - settlementPrefs
+  - technology
+
