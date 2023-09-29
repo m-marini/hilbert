@@ -29,11 +29,14 @@ package org.mmarini.hilbert.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
+import org.mmarini.Tuple2;
 import org.mmarini.hilbert.TestFunctions;
 import org.mmarini.yaml.Utils;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import static java.lang.Math.log;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,7 +44,7 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-class RulesLoaderTest {
+class RulesSerdeTest {
 
     @Test
     void loadEducationRule() throws IOException {
@@ -76,11 +79,11 @@ class RulesLoaderTest {
         double lambda = population / demand - educators * productivity * eff / demand / timeConstant;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = RulesLoader.loadEducationRule(jsonNode, random);
-        Status edu = rule.apply(status, 1d);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = RulesSerde.loadEducationRule(jsonNode, random);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> edu = rule.apply(status, 1d);
 
         // Then ...
-        assertThat(edu.getTechnology(), closeTo(-technology * 3d / population, 1e-6));
+        assertThat(edu._1.getTechnology(), closeTo(-technology * 3d / population, 1e-6));
         verify(random).nextPoisson(lambda);
     }
 
@@ -113,11 +116,11 @@ class RulesLoaderTest {
         when(random.nextPoisson(anyDouble())).thenReturn(3);
 
         // When ...
-        BiFunction<Status, Double, Status> rule = RulesLoader.loadFoodProductionRule(jsonNode, random);
-        Status deaths = rule.apply(status0, 1d);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = RulesSerde.loadFoodProductionRule(jsonNode, random);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> deaths = rule.apply(status0, 1d);
 
         // Then ...
-        assertEquals(Status.population(-3), deaths);
+        assertEquals(Status.population(-3), deaths._1);
         verify(random).nextPoisson(65d);
     }
 
@@ -141,11 +144,11 @@ class RulesLoaderTest {
                 1);
 
         // When ...
-        BiFunction<Status, Double, Status> rule = RulesLoader.loadOverSettlementRule(jsonNode, random);
-        Status deaths = rule.apply(status, 1d);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = RulesSerde.loadOverSettlementRule(jsonNode, random);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> deaths = rule.apply(status, 1d);
 
         // Then ...
-        assertEquals(Status.population(-3), deaths);
+        assertEquals(Status.population(-3), deaths._1);
         verify(random).nextPoisson(anyDouble());
     }
 
@@ -178,11 +181,11 @@ class RulesLoaderTest {
         when(random.nextPoisson(anyDouble())).thenReturn(3);
 
         // When ...
-        BiFunction<Status, Double, Status> rule = RulesLoader.loadResearchRule(jsonNode, random);
-        Status edu = rule.apply(status, 1d);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = RulesSerde.loadResearchRule(jsonNode, random);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> edu = rule.apply(status, 1d);
 
         // Then ...
-        assertThat(edu.getTechnology(), closeTo(3 * 0.01, 1e-6));
+        assertThat(edu._1.getTechnology(), closeTo(3 * 0.01, 1e-6));
         verify(random).nextPoisson(50);
     }
 }

@@ -28,17 +28,22 @@
 package org.mmarini.hilbert.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.mmarini.yaml.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+
+import static org.mmarini.yaml.Utils.objectMapper;
 
 /**
  * Loads the society from yaml resources
  */
-public class StatusLoader {
-    private static final Logger logger = LoggerFactory.getLogger(StatusLoader.class);
+public class StatusSerde {
+    public static final String VERSION = "0.1";
+    private static final Logger logger = LoggerFactory.getLogger(StatusSerde.class);
     private static final String STATUS_SCHEMA = "/status-schema.yml";
 
     /**
@@ -69,5 +74,38 @@ public class StatusLoader {
                 node.path("educationPrefs").asDouble(),
                 node.path("settlementPrefs").asDouble(),
                 node.path("technology").asDouble());
+    }
+
+    /**
+     * Returns the json node of status
+     *
+     * @param status the status
+     */
+    public static JsonNode toJson(Status status) {
+        ObjectNode node = objectMapper.createObjectNode();
+        node.put("version", VERSION);
+        node.put("population", status.getPopulation());
+        node.put("farmerPrefs", status.getFarmerPrefs());
+        node.put("researcherPrefs", status.getResearcherPrefs());
+        node.put("educatorPrefs", status.getEducatorPrefs());
+        node.put("inactivePrefs", status.getInactivePrefs());
+        node.put("foodPrefs", status.getFoodPrefs());
+        node.put("researchPrefs", status.getResearchPrefs());
+        node.put("educationPrefs", status.getEducationPrefs());
+        node.put("settlementPrefs", status.getSettlementPrefs());
+        node.put("technology", status.getTechnology());
+        return node;
+    }
+
+    /**
+     * Writes status yaml to file
+     *
+     * @param file   the file
+     * @param status the status
+     * @throws IOException in case of error
+     */
+    public static void write(File file, Status status) throws IOException {
+        logger.atDebug().log("Write {}", file);
+        objectMapper.writeValue(file, toJson(status));
     }
 }

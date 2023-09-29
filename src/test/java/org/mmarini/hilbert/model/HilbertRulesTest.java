@@ -28,15 +28,20 @@
 package org.mmarini.hilbert.model;
 
 import org.junit.jupiter.api.Test;
+import org.mmarini.Matchers;
+import org.mmarini.Tuple2;
 import org.mockito.Mockito;
 import org.mockito.hamcrest.MockitoHamcrest;
 
+import java.util.Collection;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import static java.lang.Math.log;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mmarini.Matchers.tupleOf;
 import static org.mockito.Mockito.*;
 
 class HilbertRulesTest {
@@ -67,12 +72,18 @@ class HilbertRulesTest {
         double timeInterval = 1;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = HilbertRules.educationRule(random, resources, productivity, demand, timeConstant);
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.educationRule(random, resources, productivity, demand, timeConstant);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertThat(delta.getTechnology(), closeTo(0, 1e-6));
+        assertThat(delta._1.getTechnology(), closeTo(0, 1e-6));
         verify(random, never()).nextPoisson(anyDouble());
+
+        assertThat(kpi, containsInAnyOrder(
+                tupleOf("educationDeltaT", -0d),
+                tupleOf("educationLambda", 0d),
+                tupleOf("educationKe", ke)));
     }
 
     @Test
@@ -103,12 +114,19 @@ class HilbertRulesTest {
         double lambda = ke * population;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = HilbertRules.educationRule(random, resources, productivity, demand, timeConstant);
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.educationRule(random, resources, productivity, demand, timeConstant);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertThat(delta.getTechnology(), closeTo(-technology * 3 / population, 1e-6));
+        assertThat(delta._1.getTechnology(), closeTo(-technology * 3 / population, 1e-6));
         verify(random).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
+
+        assertThat(kpi, containsInAnyOrder(
+                tupleOf(equalTo("educationDeltaT"), closeTo(-technology * 3 / population, 1e-6)),
+                tupleOf(equalTo("educationLambda"), closeTo(lambda, 1e-6)),
+                tupleOf(equalTo("educationKe"), closeTo(ke, 1e-6))
+        ));
     }
 
     @Test
@@ -136,14 +154,23 @@ class HilbertRulesTest {
         double birthTimeConstant = 1;
         double timeInterval = 1;
         double lambda = (eff * farmers * productivity / demand / birthTimeConstant - population / birthTimeConstant) * timeInterval;
+        double kf = eff * farmers / demand / population;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = HilbertRules.foodProductionRule(random, resources, productivity, demand, 1, birthTimeConstant);
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.foodProductionRule(random, resources, productivity, demand, 1, birthTimeConstant);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertEquals(Status.population(3), delta);
+        assertEquals(Status.population(3), delta._1);
         verify(random, only()).nextPoisson(lambda);
+        assertThat(kpi, containsInAnyOrder(
+                Matchers.<String, Number>tupleOf("foodDeaths", 0),
+                Matchers.<String, Number>tupleOf("foodBirths", 3),
+                tupleOf("foodKf", kf),
+                tupleOf("foodLambdaDeaths", 0d),
+                tupleOf("foodLambdaBirths", lambda)
+        ));
     }
 
     @Test
@@ -171,32 +198,56 @@ class HilbertRulesTest {
         double deathTimeConstant = 1;
         double timeInterval = 1;
         double lambda = population / deathTimeConstant - eff * farmers * productivity / demand / deathTimeConstant * timeInterval;
+        double kf = eff * productivity * farmers / population / demand;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = HilbertRules.foodProductionRule(random, resources, productivity, demand, deathTimeConstant, 1);
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.foodProductionRule(random, resources, productivity, demand, deathTimeConstant, 1);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertEquals(Status.population(-3), delta);
+        assertEquals(Status.population(-3), delta._1);
         verify(random, only()).nextPoisson(lambda);
+        assertThat(kpi, containsInAnyOrder(
+                Matchers.<String, Number>tupleOf("foodDeaths", -3),
+                Matchers.<String, Number>tupleOf("foodBirths", 0),
+                Matchers.tupleOf("foodKf", kf),
+                Matchers.tupleOf("foodLambdaDeaths", lambda),
+                Matchers.tupleOf("foodLambdaBirths", 0d)
+        ));
     }
-
 
     @Test
     void noOverSettlement() {
         // Given
         // a population under the max density
+        double settlement = 50;
+        int otherRes = 10;
         Status status0 = Status.create(
                 25, 25, 25, 25,
-                10, 10, 30, 50,
+                otherRes, otherRes, otherRes, settlement,
                 0);
-        BiFunction<Status, Double, Status> rule = HilbertRules.overSettlement(new ExtRandom(), 100, 2, 1);
+        double population = 100;
+        double deathTimeConstant = 1;
+        double density = 2;
+        double pop = population / deathTimeConstant;
+        double maxPop = settlement * density / deathTimeConstant;
+        double resources = otherRes * 3 + settlement;
 
         // When ...
-        Status delta = rule.apply(status0, 1d);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(new ExtRandom(), resources, density, deathTimeConstant);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, 1d);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertEquals(Status.zero(), delta);
+        assertEquals(Status.zero(), delta._1);
+
+        assertThat(kpi, containsInAnyOrder(
+                Matchers.<String, Number>tupleOf("overSettlementDeaths", 0),
+                tupleOf("overSettlementMaxPop", maxPop),
+                tupleOf("overSettlementPop", pop),
+                tupleOf("overSettlementLambda", 0d)
+        ));
     }
 
     @Test
@@ -216,14 +267,24 @@ class HilbertRulesTest {
         double timeInterval = 1;
         double deathTimeConstant = 2;
         double lambda = population / deathTimeConstant - settlement * density / deathTimeConstant * timeInterval;
+        double pop = population * timeInterval / deathTimeConstant;
+        double maxPop = settlement * density * timeInterval / deathTimeConstant;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = HilbertRules.overSettlement(random, 100, density, deathTimeConstant);
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(random, 100, density, deathTimeConstant);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertEquals(Status.population(-3), delta);
+        assertEquals(Status.population(-3), delta._1);
         verify(random).nextPoisson(lambda);
+
+        assertThat(kpi, containsInAnyOrder(
+                Matchers.<String, Number>tupleOf("overSettlementDeaths", -3),
+                tupleOf("overSettlementMaxPop", maxPop),
+                tupleOf("overSettlementPop", pop),
+                tupleOf("overSettlementLambda", lambda)
+        ));
     }
 
     @Test
@@ -233,19 +294,31 @@ class HilbertRulesTest {
                 25, 25, 25, 25,
                 25, 25, 25, settlement,
                 0);
+        int population = 25 * 4;
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(0); // 0 dead's
         double density = 10;
         double deathTimeConstant = 2;
         double timeInterval = 1;
-        BiFunction<Status, Double, Status> rule = HilbertRules.overSettlement(random, 100, density, deathTimeConstant);
+        double lambda = 0;
+        double pop = population * timeInterval / deathTimeConstant;
+        double maxPop = settlement * density * timeInterval / deathTimeConstant;
 
         // When ...
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(random, 100, density, deathTimeConstant);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertEquals(Status.zero(), delta);
+        assertEquals(Status.zero(), delta._1);
         verify(random, never()).nextPoisson(anyDouble());
+
+        assertThat(kpi, containsInAnyOrder(
+                Matchers.<String, Number>tupleOf("overSettlementDeaths", 0),
+                tupleOf("overSettlementMaxPop", maxPop),
+                tupleOf("overSettlementPop", pop),
+                tupleOf("overSettlementLambda", lambda)
+        ));
     }
 
     @Test
@@ -272,12 +345,18 @@ class HilbertRulesTest {
         double lambda = eff * researchers * productivity / cost * timeInterval;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = HilbertRules.researchRule(random, resources, productivity, cost, quantum);
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.researchRule(random, resources, productivity, cost, quantum);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertThat(delta.getTechnology(), closeTo(3 * quantum, 1e-6));
+        assertThat(delta._1.getTechnology(), closeTo(3 * quantum, 1e-6));
         verify(random).nextPoisson(lambda);
+
+        assertThat(kpi, containsInAnyOrder(
+                tupleOf("researchDeltaT", 3 * quantum),
+                tupleOf("researchLambda", lambda)
+        ));
     }
 
     @Test
@@ -304,11 +383,17 @@ class HilbertRulesTest {
         double lambda = eff * research / cost * timeInterval;
 
         // When ...
-        BiFunction<Status, Double, Status> rule = HilbertRules.researchRule(random, resources, productivity, cost, quantum);
-        Status delta = rule.apply(status0, timeInterval);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.researchRule(random, resources, productivity, cost, quantum);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
         // Then ...
-        assertThat(delta.getTechnology(), closeTo(3 * quantum, 1e-6));
+        assertThat(delta._1.getTechnology(), closeTo(3 * quantum, 1e-6));
         verify(random).nextPoisson(lambda);
+
+        assertThat(kpi, containsInAnyOrder(
+                tupleOf("researchDeltaT", 3 * quantum),
+                tupleOf("researchLambda", lambda)
+        ));
     }
 }

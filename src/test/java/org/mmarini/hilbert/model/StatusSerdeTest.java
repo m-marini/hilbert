@@ -32,11 +32,14 @@ import org.junit.jupiter.api.Test;
 import org.mmarini.hilbert.TestFunctions;
 import org.mmarini.yaml.Utils;
 
+import java.io.File;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class StatusLoaderTest {
+class StatusSerdeTest {
+
+    public static final String TEST_YML = "./test.yml";
 
     @Test
     void loadStatus() throws IOException {
@@ -56,7 +59,7 @@ class StatusLoaderTest {
                 "technology: 0.01"
         ));
         // When
-        Status status = StatusLoader.fromJson(jsonNode);
+        Status status = StatusSerde.fromJson(jsonNode);
 
         // Then ...
         assertEquals(100, status.getPopulation());
@@ -70,4 +73,27 @@ class StatusLoaderTest {
         assertEquals(3, status.getSettlementPrefs());
         assertEquals(0.01, status.getTechnology());
     }
+
+    @Test
+    void saveStatus() throws IOException {
+        // Given ...
+        int farmers = 1;
+        int researchers = 2;
+        int educators = 3;
+        int inactive = 4;
+        double food = 5;
+        double research = 6;
+        double education = 7;
+        double settlement = 8;
+        double technology = 0.5;
+        Status status0 = Status.create(farmers, researchers, educators, inactive, food, research, education, settlement, technology);
+
+        // When ...
+        StatusSerde.write(new File(TEST_YML), status0);
+        Status status1 = StatusSerde.fromFile(TEST_YML);
+
+        // Then ...
+        assertEquals(status0, status1);
+    }
+
 }

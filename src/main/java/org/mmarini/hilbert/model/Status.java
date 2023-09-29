@@ -28,10 +28,9 @@
 package org.mmarini.hilbert.model;
 
 import org.mmarini.LazyValue;
+import org.mmarini.Tuple2;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.DoubleStream;
 
 import static java.lang.Math.expm1;
@@ -265,6 +264,16 @@ public class Status {
 
     public double getInactivePrefs() {
         return inactivePrefs;
+    }
+
+    /**
+     * Returns the kpis of the status
+     */
+    public Collection<Tuple2<String, Number>> getKpi() {
+        return List.of(
+                Tuple2.of("population", getPopulation()),
+                Tuple2.of("technology", getTechnology())
+        );
     }
 
     public int getPopulation() {
