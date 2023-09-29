@@ -27,10 +27,14 @@
 
 package org.mmarini.hilbert.model;
 
+import org.mmarini.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -50,32 +54,31 @@ public class HilbertRules {
      * @param demand       education demand by individual by unit time
      * @param timeConstant education ratio
      */
-    public static BiFunction<Status, Double, Status> educationRule(ExtRandom random, double resources, double productivity, double demand, double timeConstant) {
-        double educatedByIndividual = productivity / timeConstant / demand;
-        double educatedByResource = resources / timeConstant / demand;
+    public static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> educationRule(ExtRandom random, double resources, double productivity, double demand, double timeConstant) {
         return (status, dt) -> {
+
             int population = status.getPopulation();
             double educators = status.getEducators();
-            double ke = status.getEducationRatio();
+            double educationRatio = status.getEducationRatio();
             double efficiency = status.getEfficiency();
             double technology = status.getTechnology();
-            double educatedPop = educators * educatedByIndividual;
-            double educatedRes = ke * educatedByResource;
-            double popByTime = population / timeConstant;
-            double educatedByTime = efficiency * min(educatedPop, educatedRes);
-            double lambda = max(0, (popByTime - educatedByTime)) * dt;
+
+            double ke = efficiency * min(educators * productivity / population, educationRatio * resources) / demand;
+            double lambda = max(0, (1 - ke)) * population * dt / timeConstant;
             int ne = lambda > 0 ? random.nextPoisson(lambda) : 0;
             double deltaT = -technology * min((double) ne / population, 1);
-            logger.atDebug().log("educationRule: lambda={} popByTime={} educatedByTime={} educatedPop={} educatedRes={}",
+            logger.atDebug().log("educationRule: lambda={} ke={}",
                     lambda,
-                    popByTime,
-                    educatedByTime,
-                    educatedPop,
-                    educatedRes);
+                    ke);
             if (ne > 0) {
                 logger.atInfo().log("Technology loss {}", deltaT);
             }
-            return Status.technology(deltaT);
+            Supplier<Collection<Tuple2<String, Number>>> kpi = () -> List.of(
+                    Tuple2.of("educationDeltaT", deltaT),
+                    Tuple2.of("educationLambda", lambda),
+                    Tuple2.of("educationKe", ke)
+            );
+            return Tuple2.of(Status.technology(deltaT), kpi);
         };
     }
 
@@ -89,48 +92,25 @@ public class HilbertRules {
      * @param deathTimeConstant death ratio from starvation
      * @param birthTimeConstant the birth ratio
      */
-    public static BiFunction<Status, Double, Status> foodProductionRule(ExtRandom random, double resources, double productivity, double demand, double deathTimeConstant, double birthTimeConstant) {
-        double farmersDeaths = productivity / demand / deathTimeConstant;
-        double foodDeaths = resources / demand / deathTimeConstant;
-
-        double farmersBirths = productivity / demand / birthTimeConstant;
-        double foodBirths = resources / demand / birthTimeConstant;
-
+    public static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> foodProductionRule(ExtRandom random, double resources, double productivity, double demand, double deathTimeConstant, double birthTimeConstant) {
         return (status, dt) -> {
             double eta = status.getEfficiency();
             double farmers = status.getFarmers();
             int pop = status.getPopulation();
             double foodRatio = status.getFoodRatio();
-            double maxByIndividuals = farmers * farmersDeaths;
-            double maxByResources = foodRatio * foodDeaths;
-            double popByDeathTime = pop / deathTimeConstant;
-            double maxPopByDeathTime = eta * min(maxByIndividuals, maxByResources);
-            double lambdaDeaths = max(
-                    popByDeathTime - maxPopByDeathTime,
-                    0) * dt;
+
+            double kf = eta * min(productivity * farmers / pop, foodRatio * resources) / demand;
+            double lambdaDeaths = max(0, pop * (1 - kf)) * dt / deathTimeConstant;
             int deaths = lambdaDeaths > 0 ? random.nextPoisson(lambdaDeaths) : 0;
-            logger.atDebug().log("foodProductionRule: lambdaDeaths={} popByDeathTime={} maxPopByDeathTime={} maxByIndividuals={} maxByResources={}",
+            logger.atDebug().log("foodProductionRule: lambdaDeaths={} kf={}",
                     lambdaDeaths,
-                    popByDeathTime,
-                    maxPopByDeathTime,
-                    maxByIndividuals,
-                    maxByResources
+                    kf
             );
 
-            double maxBirthByIndividual = farmers * farmersBirths;
-            double maxBirthByresource = foodRatio * foodBirths;
-            double maxPopByBirthTime = eta * min(maxBirthByIndividual, maxBirthByresource);
-            double popByBirthTime = pop / birthTimeConstant;
-            double lambdaBirths = max(maxPopByBirthTime - popByBirthTime,
-                    0) * dt;
-
+            double lambdaBirths = max(0, pop * (kf - 1)) * dt / birthTimeConstant;
             int births = lambdaBirths > 0 ? random.nextPoisson(lambdaBirths) : 0;
-            logger.atDebug().log("foodProductionRule: lambdaBirth={} popByBirthTime={} maxPopByBirthTime={} maxBirthByIndividual={} maxBirthByresource={}",
-                    lambdaBirths,
-                    popByBirthTime,
-                    maxPopByBirthTime,
-                    maxBirthByIndividual,
-                    maxBirthByresource
+            logger.atDebug().log("foodProductionRule: lambdaBirth={}",
+                    lambdaBirths
             );
 
             if (deaths > 0) {
@@ -138,7 +118,14 @@ public class HilbertRules {
             } else if (births > 0) {
                 logger.atInfo().log("{} births", births);
             }
-            return Status.population(births - deaths);
+            Supplier<Collection<Tuple2<String, Number>>> builder = () -> List.of(
+                    Tuple2.of("foodDeaths", -deaths),
+                    Tuple2.of("foodBirths", births),
+                    Tuple2.of("foodKf", kf),
+                    Tuple2.of("foodLambdaDeaths", lambdaDeaths),
+                    Tuple2.of("foodLambdaBirths", lambdaBirths)
+            );
+            return Tuple2.of(Status.population(births - deaths), builder);
         };
     }
 
@@ -152,27 +139,32 @@ public class HilbertRules {
      * @param density           the preferred population density by settlement resources
      * @param deathTimeConstant the deaths time constant
      */
-    public static BiFunction<Status, Double, Status> overSettlement(ExtRandom random, double resources, double density, double deathTimeConstant) {
+    public static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> overSettlement(ExtRandom random, double resources, double density, double deathTimeConstant) {
         double deathsOver = resources * density / deathTimeConstant;
         return (status, dt) -> {
             // Computes the over settlement deaths
             int population = status.getPopulation();
             double settlementRatio = status.getSettlementRatio();
-            double popByTime = population / deathTimeConstant;
-            double maxPopByTime = settlementRatio * deathsOver;
-            double lambdaOver = max(0, popByTime - maxPopByTime) * dt;
-            logger.atDebug().log("overSettlement: lambda={} popByTime={} maxPopByTime={} lambdaOver={}",
-                    lambdaOver,
-                    popByTime,
-                    maxPopByTime,
-                    lambdaOver);
-            int deaths = lambdaOver > 0 ? random.nextPoisson(lambdaOver) : 0;
+            double maxPop = settlementRatio * deathsOver * dt;
+            double pop = population / deathTimeConstant * dt;
+            double lambda = max(0, pop - maxPop);
+            logger.atDebug().log("overSettlement: lambda={}  maxPop={} pop={}",
+                    lambda,
+                    maxPop,
+                    pop);
+            int deaths = lambda > 0 ? random.nextPoisson(lambda) : 0;
             if (deaths > 0) {
                 logger.atInfo().log(
                         "{} deaths for over settlement",
                         deaths);
             }
-            return Status.population(-deaths);
+            Supplier<Collection<Tuple2<String, Number>>> kpi = () -> List.of(
+                    Tuple2.of("overSettlementDeaths", -deaths),
+                    Tuple2.of("overSettlementMaxPop", maxPop),
+                    Tuple2.of("overSettlementPop", pop),
+                    Tuple2.of("overSettlementLambda", lambda)
+            );
+            return Tuple2.of(Status.population(-deaths), kpi);
         };
     }
 
@@ -185,27 +177,30 @@ public class HilbertRules {
      * @param cost         cost of quantum
      * @param quantum      the technology quantum step
      */
-    public static BiFunction<Status, Double, Status> researchRule(ExtRandom random, double resources, double productivity, double cost, double quantum) {
-        double researcherSteps = productivity / cost;
-        double researchSteps = resources / cost;
+    public static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> researchRule(ExtRandom random, double resources, double productivity, double cost, double quantum) {
         return (status, dt) -> {
             double researchers = status.getResearchers();
             double researchRatio = status.getResearchRatio();
             double eta = status.getEfficiency();
-            double popStep = researchers * researcherSteps;
-            double resStep = researchRatio * researchSteps;
-            double lambda = eta * min(popStep, resStep) * dt;
+
+            double researchByPop = researchers * productivity;
+            double researchByRes = researchRatio * resources;
+            double lambda = eta * min(researchByPop, researchByRes) * dt / cost;
             int steps = lambda > 0 ? random.nextPoisson(lambda) : 0;
             logger.atDebug().log("researchRule: lambda={} popStep={} resStep={}",
                     lambda,
-                    popStep,
-                    resStep);
-            if (steps == 0) {
-                return Status.zero();
-            }
+                    researchByPop,
+                    researchByRes);
             double deltaT = steps * quantum;
+            Status newStatus = steps == 0
+                    ? Status.zero()
+                    : Status.technology(deltaT);
             logger.atInfo().log("Technology enhancement {}", deltaT);
-            return Status.technology(deltaT);
+            Supplier<Collection<Tuple2<String, Number>>> builder = () -> List.of(
+                    Tuple2.of("researchDeltaT", deltaT),
+                    Tuple2.of("researchLambda", lambda)
+            );
+            return Tuple2.of(newStatus, builder);
         };
     }
 }

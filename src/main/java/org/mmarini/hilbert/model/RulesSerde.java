@@ -28,22 +28,28 @@
 package org.mmarini.hilbert.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.mmarini.Tuple2;
 import org.mmarini.yaml.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Loads the society from yaml resources
  */
-public class RulesLoader {
+public class RulesSerde {
     public static final String RULES_SCHEMA = "/rules-schema.yml";
-    private static final Logger logger = LoggerFactory.getLogger(RulesLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(RulesSerde.class);
 
     /**
      * Returns the society from yaml resource
@@ -51,7 +57,7 @@ public class RulesLoader {
      * @param file the yaml resource
      * @throws IOException in case of error
      */
-    public static UnaryOperator<Status> fromFile(String file) throws IOException {
+    public static Function<Status, Tuple2<Status, Supplier<Map<String, Number>>>> fromFile(String file) throws IOException {
         return fromJson(Utils.fromFile(file));
     }
 
@@ -60,13 +66,14 @@ public class RulesLoader {
      *
      * @param node the json node
      */
-    public static UnaryOperator<Status> fromJson(JsonNode node) {
+    public static Function<Status, Tuple2<Status, Supplier<Map<String, Number>>>> fromJson(JsonNode node) {
+        logger.atDebug().log("from json");
         // Validates the document
         JsonSchemas.instance().validateOrThrow(node, RULES_SCHEMA);
         // Loads all the rules
         long seed = node.path("seed").asLong(0);
         ExtRandom random = seed != 0 ? new ExtRandom(seed) : new ExtRandom();
-        List<BiFunction<Status, Double, Status>> rules = List.of(
+        List<BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>>> rules = List.of(
                 loadOverSettlementRule(node, random),
                 loadFoodProductionRule(node, random),
                 loadResearchRule(node, random),
@@ -74,18 +81,23 @@ public class RulesLoader {
         );
         UnaryOperator<Status> normalize = loadNormalizationRule(node);
         double dt = loadTimeInterval(node);
-        UnaryOperator<Status> engine = status -> {
+        // Load demography
+        return status -> {
             // Creates the demography
             // Apply the rules
-            Status[] states = Stream.concat(Stream.of(status),
+            Supplier<Collection<Tuple2<String, Number>>> initKpi = status::getKpi;
+            List<Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> partials = Stream.concat(
+                            Stream.of(Tuple2.of(status, initKpi)),
                             rules.stream()
                                     .map(f -> f.apply(status, dt)))
-                    .toArray(Status[]::new);
-            Status newStatus = normalize.apply(Status.sum(states));
-            return newStatus;
+                    .collect(Collectors.toList());
+
+            Status newStatus = normalize.apply(Status.sum(partials.stream().map(Tuple2::getV1).toArray(Status[]::new)));
+            Supplier<Map<String, Number>> kpi = () -> partials.stream()
+                    .flatMap(t -> t._2.get().stream())
+                    .collect(Tuple2.toMap());
+            return Tuple2.of(newStatus, kpi);
         };
-        // Load demography
-        return engine;
     }
 
     /**
@@ -94,7 +106,7 @@ public class RulesLoader {
      * @param node   the json main node
      * @param random the random number generator
      */
-    static BiFunction<Status, Double, Status> loadEducationRule(JsonNode node, ExtRandom random) {
+    static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> loadEducationRule(JsonNode node, ExtRandom random) {
         JsonNode foodNode = node.path("education");
         double productivity = foodNode.path("productivity").asDouble();
         double demand = foodNode.path("demand").asDouble();
@@ -108,7 +120,7 @@ public class RulesLoader {
      * @param node   the json main node
      * @param random the random number generator
      */
-    static BiFunction<Status, Double, Status> loadFoodProductionRule(JsonNode node, ExtRandom random) {
+    static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> loadFoodProductionRule(JsonNode node, ExtRandom random) {
         JsonNode foodNode = node.path("foodProduction");
         double productivity = foodNode.path("productivity").asDouble();
         double demand = foodNode.path("demand").asDouble();
@@ -129,7 +141,7 @@ public class RulesLoader {
      * @param node   the json main node
      * @param random the random number generator
      */
-    static BiFunction<Status, Double, Status> loadOverSettlementRule(JsonNode node, ExtRandom random) {
+    static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> loadOverSettlementRule(JsonNode node, ExtRandom random) {
         JsonNode settlementNode = node.path("overSettlement");
         double density = settlementNode.path("density").asDouble();
         double deadTimeConstant = settlementNode.path("deathTimeConstant").asDouble();
@@ -142,7 +154,7 @@ public class RulesLoader {
      * @param node   the json main node
      * @param random the random number generator
      */
-    static BiFunction<Status, Double, Status> loadResearchRule(JsonNode node, ExtRandom random) {
+    static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> loadResearchRule(JsonNode node, ExtRandom random) {
         JsonNode researchNode = node.path("research");
         double productivity = researchNode.path("productivity").asDouble();
         double cost = researchNode.path("cost").asDouble();
