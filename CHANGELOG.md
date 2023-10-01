@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased] yyyy-mm-dd
 
+## [0.0.1] 2023-10-01
+
 ### Added
 
 - Issue #0: Maven build, Poisson distribution, Yaml files
