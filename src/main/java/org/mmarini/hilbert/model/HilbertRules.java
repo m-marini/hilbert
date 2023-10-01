@@ -74,9 +74,9 @@ public class HilbertRules {
                 logger.atInfo().log("Technology loss {}", deltaT);
             }
             Supplier<Collection<Tuple2<String, Number>>> kpi = () -> List.of(
-                    Tuple2.of("educationDeltaT", deltaT),
-                    Tuple2.of("educationLambda", lambda),
-                    Tuple2.of("educationKe", ke)
+                    Tuple2.of("deltaTE", deltaT),
+                    Tuple2.of("lambdaE", lambda),
+                    Tuple2.of("ke", ke)
             );
             return Tuple2.of(Status.technology(deltaT), kpi);
         };
@@ -99,19 +99,14 @@ public class HilbertRules {
             int pop = status.getPopulation();
             double foodRatio = status.getFoodRatio();
 
-            double kf = eta * min(productivity * farmers / pop, foodRatio * resources) / demand;
+            double kfPop = eta * productivity * farmers / pop / demand;
+            double kfRes = eta * foodRatio * resources / pop / demand;
+            double kf = min(kfPop, kfRes);
             double lambdaDeaths = max(0, pop * (1 - kf)) * dt / deathTimeConstant;
             int deaths = lambdaDeaths > 0 ? random.nextPoisson(lambdaDeaths) : 0;
-            logger.atDebug().log("foodProductionRule: lambdaDeaths={} kf={}",
-                    lambdaDeaths,
-                    kf
-            );
 
             double lambdaBirths = max(0, pop * (kf - 1)) * dt / birthTimeConstant;
             int births = lambdaBirths > 0 ? random.nextPoisson(lambdaBirths) : 0;
-            logger.atDebug().log("foodProductionRule: lambdaBirth={}",
-                    lambdaBirths
-            );
 
             if (deaths > 0) {
                 logger.atInfo().log("{} deaths from starvation", deaths);
@@ -119,11 +114,13 @@ public class HilbertRules {
                 logger.atInfo().log("{} births", births);
             }
             Supplier<Collection<Tuple2<String, Number>>> builder = () -> List.of(
-                    Tuple2.of("foodDeaths", -deaths),
-                    Tuple2.of("foodBirths", births),
-                    Tuple2.of("foodKf", kf),
-                    Tuple2.of("foodLambdaDeaths", lambdaDeaths),
-                    Tuple2.of("foodLambdaBirths", lambdaBirths)
+                    Tuple2.of("deathsS", -deaths),
+                    Tuple2.of("births", births),
+                    Tuple2.of("kf", kf),
+                    Tuple2.of("kfPop", kfPop),
+                    Tuple2.of("kfRes", kfRes),
+                    Tuple2.of("lambdaS", lambdaDeaths),
+                    Tuple2.of("lambdaB", lambdaBirths)
             );
             return Tuple2.of(Status.population(births - deaths), builder);
         };
@@ -159,10 +156,10 @@ public class HilbertRules {
                         deaths);
             }
             Supplier<Collection<Tuple2<String, Number>>> kpi = () -> List.of(
-                    Tuple2.of("overSettlementDeaths", -deaths),
-                    Tuple2.of("overSettlementMaxPop", maxPop),
-                    Tuple2.of("overSettlementPop", pop),
-                    Tuple2.of("overSettlementLambda", lambda)
+                    Tuple2.of("deathsO", -deaths),
+                    Tuple2.of("maxPopO", maxPop),
+                    Tuple2.of("popO", pop),
+                    Tuple2.of("lambdaO", lambda)
             );
             return Tuple2.of(Status.population(-deaths), kpi);
         };
@@ -197,8 +194,8 @@ public class HilbertRules {
                     : Status.technology(deltaT);
             logger.atInfo().log("Technology enhancement {}", deltaT);
             Supplier<Collection<Tuple2<String, Number>>> builder = () -> List.of(
-                    Tuple2.of("researchDeltaT", deltaT),
-                    Tuple2.of("researchLambda", lambda)
+                    Tuple2.of("deltaTR", deltaT),
+                    Tuple2.of("lambdaR", lambda)
             );
             return Tuple2.of(newStatus, builder);
         };

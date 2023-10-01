@@ -38,6 +38,7 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static java.lang.Math.log;
+import static java.lang.Math.min;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,9 +82,9 @@ class HilbertRulesTest {
         verify(random, never()).nextPoisson(anyDouble());
 
         assertThat(kpi, containsInAnyOrder(
-                tupleOf("educationDeltaT", -0d),
-                tupleOf("educationLambda", 0d),
-                tupleOf("educationKe", ke)));
+                tupleOf("deltaTE", -0d),
+                tupleOf("lambdaE", 0d),
+                tupleOf("ke", ke)));
     }
 
     @Test
@@ -123,9 +124,9 @@ class HilbertRulesTest {
         verify(random).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
 
         assertThat(kpi, containsInAnyOrder(
-                tupleOf(equalTo("educationDeltaT"), closeTo(-technology * 3 / population, 1e-6)),
-                tupleOf(equalTo("educationLambda"), closeTo(lambda, 1e-6)),
-                tupleOf(equalTo("educationKe"), closeTo(ke, 1e-6))
+                tupleOf(equalTo("deltaTE"), closeTo(-technology * 3 / population, 1e-6)),
+                tupleOf(equalTo("lambdaE"), closeTo(lambda, 1e-6)),
+                tupleOf(equalTo("ke"), closeTo(ke, 1e-6))
         ));
     }
 
@@ -154,7 +155,9 @@ class HilbertRulesTest {
         double birthTimeConstant = 1;
         double timeInterval = 1;
         double lambda = (eff * farmers * productivity / demand / birthTimeConstant - population / birthTimeConstant) * timeInterval;
-        double kf = eff * farmers / demand / population;
+        double kfPop = eff * farmers / population / demand;
+        double kfRes = eff * food / demand / population;
+        double kf = min(kfPop, kfRes);
 
         // When ...
         BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.foodProductionRule(random, resources, productivity, demand, 1, birthTimeConstant);
@@ -165,11 +168,13 @@ class HilbertRulesTest {
         assertEquals(Status.population(3), delta._1);
         verify(random, only()).nextPoisson(lambda);
         assertThat(kpi, containsInAnyOrder(
-                Matchers.<String, Number>tupleOf("foodDeaths", 0),
-                Matchers.<String, Number>tupleOf("foodBirths", 3),
-                tupleOf("foodKf", kf),
-                tupleOf("foodLambdaDeaths", 0d),
-                tupleOf("foodLambdaBirths", lambda)
+                Matchers.<String, Number>tupleOf("deathsS", 0),
+                Matchers.<String, Number>tupleOf("births", 3),
+                tupleOf("kf", kf),
+                tupleOf("kfPop", kfPop),
+                tupleOf("kfRes", kfRes),
+                tupleOf("lambdaS", 0d),
+                tupleOf("lambdaB", lambda)
         ));
     }
 
@@ -198,7 +203,9 @@ class HilbertRulesTest {
         double deathTimeConstant = 1;
         double timeInterval = 1;
         double lambda = population / deathTimeConstant - eff * farmers * productivity / demand / deathTimeConstant * timeInterval;
-        double kf = eff * productivity * farmers / population / demand;
+        double kfPop = eff * productivity * farmers / population / demand;
+        double kfRes = eff * food / population / demand;
+        double kf = min(kfPop, kfRes);
 
         // When ...
         BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.foodProductionRule(random, resources, productivity, demand, deathTimeConstant, 1);
@@ -209,11 +216,13 @@ class HilbertRulesTest {
         assertEquals(Status.population(-3), delta._1);
         verify(random, only()).nextPoisson(lambda);
         assertThat(kpi, containsInAnyOrder(
-                Matchers.<String, Number>tupleOf("foodDeaths", -3),
-                Matchers.<String, Number>tupleOf("foodBirths", 0),
-                Matchers.tupleOf("foodKf", kf),
-                Matchers.tupleOf("foodLambdaDeaths", lambda),
-                Matchers.tupleOf("foodLambdaBirths", 0d)
+                Matchers.<String, Number>tupleOf("deathsS", -3),
+                Matchers.<String, Number>tupleOf("births", 0),
+                Matchers.tupleOf("kf", kf),
+                Matchers.tupleOf("kfPop", kfPop),
+                Matchers.tupleOf("kfRes", kfRes),
+                Matchers.tupleOf("lambdaS", lambda),
+                Matchers.tupleOf("lambdaB", 0d)
         ));
     }
 
@@ -243,10 +252,10 @@ class HilbertRulesTest {
         assertEquals(Status.zero(), delta._1);
 
         assertThat(kpi, containsInAnyOrder(
-                Matchers.<String, Number>tupleOf("overSettlementDeaths", 0),
-                tupleOf("overSettlementMaxPop", maxPop),
-                tupleOf("overSettlementPop", pop),
-                tupleOf("overSettlementLambda", 0d)
+                Matchers.<String, Number>tupleOf("deathsO", 0),
+                tupleOf("maxPopO", maxPop),
+                tupleOf("popO", pop),
+                tupleOf("lambdaO", 0d)
         ));
     }
 
@@ -280,10 +289,10 @@ class HilbertRulesTest {
         verify(random).nextPoisson(lambda);
 
         assertThat(kpi, containsInAnyOrder(
-                Matchers.<String, Number>tupleOf("overSettlementDeaths", -3),
-                tupleOf("overSettlementMaxPop", maxPop),
-                tupleOf("overSettlementPop", pop),
-                tupleOf("overSettlementLambda", lambda)
+                Matchers.<String, Number>tupleOf("deathsO", -3),
+                tupleOf("maxPopO", maxPop),
+                tupleOf("popO", pop),
+                tupleOf("lambdaO", lambda)
         ));
     }
 
@@ -314,10 +323,10 @@ class HilbertRulesTest {
         verify(random, never()).nextPoisson(anyDouble());
 
         assertThat(kpi, containsInAnyOrder(
-                Matchers.<String, Number>tupleOf("overSettlementDeaths", 0),
-                tupleOf("overSettlementMaxPop", maxPop),
-                tupleOf("overSettlementPop", pop),
-                tupleOf("overSettlementLambda", lambda)
+                Matchers.<String, Number>tupleOf("deathsO", 0),
+                tupleOf("maxPopO", maxPop),
+                tupleOf("popO", pop),
+                tupleOf("lambdaO", lambda)
         ));
     }
 
@@ -354,8 +363,8 @@ class HilbertRulesTest {
         verify(random).nextPoisson(lambda);
 
         assertThat(kpi, containsInAnyOrder(
-                tupleOf("researchDeltaT", 3 * quantum),
-                tupleOf("researchLambda", lambda)
+                tupleOf("deltaTR", 3 * quantum),
+                tupleOf("lambdaR", lambda)
         ));
     }
 
@@ -392,8 +401,8 @@ class HilbertRulesTest {
         verify(random).nextPoisson(lambda);
 
         assertThat(kpi, containsInAnyOrder(
-                tupleOf("researchDeltaT", 3 * quantum),
-                tupleOf("researchLambda", lambda)
+                tupleOf("deltaTR", 3 * quantum),
+                tupleOf("lambdaR", lambda)
         ));
     }
 }

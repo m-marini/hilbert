@@ -1,6 +1,6 @@
 ---
 version: "0.1"
-population: 20
+population: 100
 farmerPrefs: -0.693
 researcherPrefs: -1.386
 educatorPrefs: -1.386
