@@ -17,7 +17,7 @@ foodProduction:
   birthTimeConstant: 0.4
 
 research:
-  productivity: 10
+  productivity: 2
   cost: 1
   quantum: 0.01
 

@@ -56,20 +56,22 @@ public class Simulate {
     public static final List<String> KPI_NAMES = List.of(
             "population",
             "technology",
-            "overSettlementDeaths",
-            "overSettlementLambda",
-            "overSettlementMaxPop",
-            "overSettlementPop",
-            "foodDeaths",
-            "foodBirths",
-            "foodKf",
-            "foodLambdaDeaths",
-            "foodLambdaBirths",
-            "researchDeltaT",
-            "researchLambda",
-            "educationDeltaT",
-            "educationLambda",
-            "educationKe"
+            "deathsO",
+            "lambdaO",
+            "maxPopO",
+            "popO",
+            "deathsS",
+            "births",
+            "kf",
+            "kfPop",
+            "kfRes",
+            "lambdaS",
+            "lambdaB",
+            "deltaTR",
+            "lambdaR",
+            "deltaTE",
+            "lambdaE",
+            "ke"
     );
     private static final Logger logger = LoggerFactory.getLogger(Simulate.class);
 

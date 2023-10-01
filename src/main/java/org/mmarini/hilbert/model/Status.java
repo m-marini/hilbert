@@ -360,7 +360,7 @@ public class Status {
                 foodPrefs - resRefsOffset,
                 researchPrefs - resRefsOffset,
                 educationPrefs - resRefsOffset,
-                settlementPrefs - researchPrefs,
+                settlementPrefs - resRefsOffset,
                 newTechnology)
                 : this;
     }

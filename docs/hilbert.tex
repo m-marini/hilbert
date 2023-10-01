@@ -253,7 +253,7 @@ La quantità di risorse trasformate è
 
 La quantità di cibo prodotta dipende invece dall'efficienza $ \eta(T) $ del processo determinata dal livello tecnologico della società $ T $, quindi
 \begin{equation*}
-	P_f = \eta(T) Q_r = \eta(T) \min(N_f \pi_f, \beta_f R) \Delta t
+	P_f = \eta(T) Q_f = \eta(T) \min(N_f \pi_f, \beta_f R) \Delta t
 \end{equation*}
 
 Il rapporto tra il cibo prodotto e il cibo richiesto determina il coefficiente di alimentazione della popolazione $K_f$
@@ -471,21 +471,21 @@ Abbiamo due gruppi di parametri che regolano la politica sociale: le preferenze 
 
 \subsection{Popolazione}
 
-Per definire la distribuzione della popolazione ipotizziamo un gruppo iniziale di 2 famiglie tipo: 2 adulti che devono mantenere 4 figli e 4 genitori.
-La popolazione totale è di 20 individui della quale quella produttiva è di 4 individui.
-Dei 4 produttivi poniamo che 2 producono cibo, un ricercatore e un educatore.
+Per definire la distribuzione della popolazione ipotizziamo un gruppo iniziale di 10 famiglie tipo: 2 adulti che devono mantenere 4 figli e 4 genitori.
+La popolazione totale è di 100 individui della quale quella produttiva è di 20 individui.
+Dei 20 produttivi poniamo che 10 producono cibo, 5 ricercatori e 5 educatori.
 
 Quindi avremo
 \begin{align*}
-	N = 20
+	N = 100
 	\\
-	N_f = 2
+	N_f = 10
 	\\
-	N_r = 1	
+	N_r = 5	
 	\\
-	N_e = 1
+	N_e = 5
 	\\
-	N_i = 16
+	N_i = 80
 \end{align*}
 i vari coefficienti sono:
 \begin{align*}
@@ -561,7 +561,7 @@ con un margine quindi del 10\% per l'incremento della popolazione.
 
 Dalla (\ref{eq:Rf}) abbiamo che
 \begin{align*}
-	R_f \ge \max \left(20 \frac{1}{0.01}, 10000 \right)
+	R_f \ge \max \left(100 \frac{1}{0.01}, 10000 \right)
 	\\
 	R_f \ge 10000
 \end{align*}
@@ -581,7 +581,7 @@ Poniamo anche che i salti tecnologici avvengano mediamente ogni 10 anni nel caso
 \begin{align*}
 	f_{ri}(T_0) = 0.1
 	\\
-	\pi_r = 0.1 \frac{1}{20 \cdot 0.01 \cdot 0.05} = 10
+	\pi_r = 0.1 \frac{1}{100 \cdot 0.01 \cdot 0.05} = 2
 \end{align*}
 
 Mentre ponendo che la frequenza massima di salti limitata dalle risorse sia di uno ogni anno, dalla (\ref{eq:Rr}) abbiamo
@@ -609,7 +609,7 @@ Dalla (\ref{eq:pie}) otteniamo
 
 Mentre dalla (\ref{eq:Re})
 \begin{align*}
-	R_e \ge \max \left( \frac{20}{0.01}, 10000 \right)
+	R_e \ge \max \left( \frac{100}{0.01}, 10000 \right)
 	\\
 	R_e \ge 10000
 \end{align*}
