@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Issue #0: Maven build, Poisson distribution, Yaml files
+- Issue #1: Translate doc
 - Issue #2: Add kpi
 - Issue #5: Added ci
 
