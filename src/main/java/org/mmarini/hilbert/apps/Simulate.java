@@ -79,7 +79,7 @@ public class Simulate {
         ArgumentParser parser = ArgumentParsers.newFor(Simulate.class.getName()).build()
                 .defaultHelp(true)
                 .version("?")
-                .description("Run a session of interaction between robot and environment.");
+                .description("Run a session of simulation.");
         parser.addArgument("-v", "--version")
                 .action(Arguments.version())
                 .help("show current version");
