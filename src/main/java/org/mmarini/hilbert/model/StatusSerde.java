@@ -42,7 +42,7 @@ import static org.mmarini.yaml.Utils.objectMapper;
  * Loads the society from yaml resources
  */
 public class StatusSerde {
-    public static final String VERSION = "0.1";
+    public static final String VERSION = "1.0";
     private static final Logger logger = LoggerFactory.getLogger(StatusSerde.class);
     private static final String STATUS_SCHEMA = "/status-schema.yml";
 
@@ -68,10 +68,12 @@ public class StatusSerde {
                 node.path("farmerPrefs").asDouble(),
                 node.path("researcherPrefs").asDouble(),
                 node.path("educatorPrefs").asDouble(),
+                node.path("doctorPrefs").asDouble(),
                 node.path("inactivePrefs").asDouble(),
                 node.path("foodPrefs").asDouble(),
                 node.path("researchPrefs").asDouble(),
                 node.path("educationPrefs").asDouble(),
+                node.path("healthPrefs").asDouble(),
                 node.path("settlementPrefs").asDouble(),
                 node.path("technology").asDouble());
     }
@@ -88,10 +90,12 @@ public class StatusSerde {
         node.put("farmerPrefs", status.getFarmerPrefs());
         node.put("researcherPrefs", status.getResearcherPrefs());
         node.put("educatorPrefs", status.getEducatorPrefs());
+        node.put("doctorPrefs", status.getDoctorPrefs());
         node.put("inactivePrefs", status.getInactivePrefs());
         node.put("foodPrefs", status.getFoodPrefs());
         node.put("researchPrefs", status.getResearchPrefs());
         node.put("educationPrefs", status.getEducationPrefs());
+        node.put("healthPrefs", status.getHealthPrefs());
         node.put("settlementPrefs", status.getSettlementPrefs());
         node.put("technology", status.getTechnology());
         return node;

@@ -32,13 +32,14 @@ import org.junit.jupiter.api.Test;
 import org.mmarini.Tuple2;
 import org.mmarini.hilbert.TestFunctions;
 import org.mmarini.yaml.Utils;
+import org.mockito.hamcrest.MockitoHamcrest;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-import static java.lang.Math.log;
+import static java.lang.Math.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,15 +63,15 @@ class RulesSerdeTest {
         ));
         int educators = 100;
         int others = 10;
-        int population = educators + 3 * others;
+        int population = educators + 4 * others;
         double education = 100;
         double otherRes = 10;
         double eff = 0.5; // 1 - exp(-technology)
 
         double technology = -log(1 - eff); // -log(1-eff)
         Status status = Status.create(
-                others, others, educators, others,
-                otherRes, otherRes, education, otherRes,
+                others, others, educators, others, others,
+                otherRes, otherRes, education, otherRes, otherRes,
                 technology
         );
 
@@ -84,44 +85,107 @@ class RulesSerdeTest {
 
         // Then ...
         assertThat(edu._1.getTechnology(), closeTo(-technology * 3d / population, 1e-6));
-        verify(random).nextPoisson(lambda);
+        verify(random).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
     }
 
     @Test
     void loadFoodProductionRule() throws IOException {
         // Given ...
+        double food = 60;
+        double otherRes = 10;
+        double resources = food + 4 * otherRes;
+
+        double timeConstant = 1;
+        double productivity = 1;
+        double demand = 1;
+
         JsonNode jsonNode = Utils.fromText(TestFunctions.text(
                 "---",
-                "resources: 100",
+                "resources: " + resources,
                 "foodProduction:",
-                "  productivity: 1",
-                "  demand: 1",
-                "  deathTimeConstant: 1",
-                "  birthTimeConstant: 1"
+                "  productivity: " + productivity,
+                "  demand: " + demand,
+                "  deathTimeConstant: " + timeConstant,
+                "  birthTimeConstant: " + timeConstant
         ));
-        int farmers = 70;
-        int others = 10;
-        double food = 70;
-        double otherRes = 10;
 
+        int farmers = 60;
+        int others = 10;
+        int pop = farmers + 4 * others;
+
+        double timeInterval = 1;
         double eff = 0.5; // 1 - exp(-technology)
 
         double technology = -log(1 - eff); // -log(1-eff)
         Status status0 = Status.create(
-                farmers, others, others, others,
-                food, otherRes, otherRes, otherRes,
+                farmers, others, others, others, others,
+                food, otherRes, otherRes, otherRes, otherRes,
                 technology);
+
+        double kfPop = eff * productivity * farmers / pop / demand;
+        double kfRes = eff * food / resources * resources / pop / demand;
+        double kf = min(kfPop, kfRes);
+        double lambda = max(0, pop * (1 - kf)) * timeInterval / timeConstant;
 
         ExtRandom random = mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3);
 
         // When ...
         BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = RulesSerde.loadFoodProductionRule(jsonNode, random);
-        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> deaths = rule.apply(status0, 1d);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> deaths = rule.apply(status0, timeInterval);
 
         // Then ...
         assertEquals(Status.population(-3), deaths._1);
-        verify(random).nextPoisson(65d);
+        verify(random).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
+    }
+
+    @Test
+    void loadHealthRule() throws IOException {
+        // Given ...
+        double health = 100;
+        double otherRes = 10;
+        double resources = health + otherRes * 4;
+        double productivity = 1;
+        double demand = 1;
+        double minimumLifeExpectancy = 20;
+        double maximumLifeExpectancy = 80;
+
+        JsonNode jsonNode = Utils.fromText(TestFunctions.text(
+                "---",
+                "resources: " + resources,
+                "health:",
+                "  productivity: " + productivity,
+                "  demand: " + demand,
+                "  minimumLifeExpectancy: " + minimumLifeExpectancy,
+                "  maximumLifeExpectancy: " + maximumLifeExpectancy
+        ));
+        int doctors = 100;
+        int others = 10;
+        int population = doctors + 4 * others;
+        double eff = 0.5; // 1 - exp(-technology)
+
+        double technology = -log(1 - eff); // -log(1-eff)
+        Status status = Status.create(
+                others, others, others, doctors, others,
+                otherRes, otherRes, otherRes, health, otherRes,
+                technology
+        );
+
+        double timeInterval = 1;
+        double kh = eff * min(doctors * productivity, health) / demand / population;
+        double lifeExpectancy = (maximumLifeExpectancy - minimumLifeExpectancy) * min(kh, 1) + minimumLifeExpectancy;
+        double lambda = population * timeInterval / lifeExpectancy;
+
+        ExtRandom random = mock();
+        when(random.nextPoisson(anyDouble())).thenReturn(3);
+
+        // When ...
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = RulesSerde.loadHealthRule(jsonNode, random);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> edu = rule.apply(status, timeInterval);
+
+        // Then ...
+        assertEquals(Status.population(-3), edu._1);
+        verify(random).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
     }
 
     @Test
@@ -138,9 +202,11 @@ class RulesSerdeTest {
         ExtRandom random = mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3);
 
+        int others = 25;
+        double otherRes = 20;
         Status status = Status.create(
-                25, 25, 25, 25,
-                25, 25, 25, 25,
+                others, others, others, others, others,
+                otherRes, otherRes, otherRes, otherRes, otherRes,
                 1);
 
         // When ...
@@ -155,9 +221,12 @@ class RulesSerdeTest {
     @Test
     void loadResearchRule() throws IOException {
         // Given ...
+        double research = 100;
+        double otherRes = 10;
+        double resources = research + otherRes * 4;
         JsonNode jsonNode = Utils.fromText(TestFunctions.text(
                 "---",
-                "resources: 130",
+                "resources: " + resources,
                 "research:",
                 "  productivity: 1",
                 "  cost: 1",
@@ -166,14 +235,12 @@ class RulesSerdeTest {
         ));
         int researchers = 100;
         int others = 10;
-        double research = 100;
-        double otherRes = 10;
         double eff = 0.5; // 1 - exp(-technology)
 
         double technology = -log(1 - eff); // -log(1-eff)
         Status status = Status.create(
-                others, researchers, others, others,
-                otherRes, research, otherRes, otherRes,
+                others, researchers, others, others, others,
+                otherRes, research, otherRes, otherRes, otherRes,
                 technology
         );
 

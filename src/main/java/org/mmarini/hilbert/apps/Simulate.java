@@ -71,7 +71,11 @@ public class Simulate {
             "lambdaR",
             "deltaTE",
             "lambdaE",
-            "ke"
+            "ke",
+            "deathsH",
+            "kh",
+            "lifeExpectancy",
+            "lambdaH"
     );
     private static final Logger logger = LoggerFactory.getLogger(Simulate.class);
 

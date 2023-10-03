@@ -45,10 +45,12 @@ class StatusTest {
                 ArgumentsGenerator.gaussian(0d, 4d), // farmers
                 ArgumentsGenerator.gaussian(0d, 4d), // researchers
                 ArgumentsGenerator.gaussian(0d, 4d), // educators
+                ArgumentsGenerator.gaussian(0d, 4d), // doctors
                 ArgumentsGenerator.gaussian(0d, 4d), // inactive
                 ArgumentsGenerator.gaussian(0d, 4d), // food
                 ArgumentsGenerator.gaussian(0d, 4d), // research
                 ArgumentsGenerator.gaussian(0d, 4d), // education
+                ArgumentsGenerator.gaussian(0d, 4d), // health
                 ArgumentsGenerator.gaussian(0d, 4d), // settlement
                 ArgumentsGenerator.uniform(0d, 4d), // technology
 
@@ -56,47 +58,57 @@ class StatusTest {
                 ArgumentsGenerator.gaussian(0d, 4d), // farmers
                 ArgumentsGenerator.gaussian(0d, 4d), // researchers
                 ArgumentsGenerator.gaussian(0d, 4d), // educators
+                ArgumentsGenerator.gaussian(0d, 4d), // doctors
                 ArgumentsGenerator.gaussian(0d, 4d), // inactive
                 ArgumentsGenerator.gaussian(0d, 4d), // food
                 ArgumentsGenerator.gaussian(0d, 4d), // research
                 ArgumentsGenerator.gaussian(0d, 4d), // education
+                ArgumentsGenerator.gaussian(0d, 4d), // health
                 ArgumentsGenerator.gaussian(0d, 4d), // settlement
                 ArgumentsGenerator.uniform(0d, 4d) // technology
         ).map(arguments -> {
             Object[] args = arguments.get();
 
-            int pop1 = ((Number) args[0]).intValue();
-            double pf1 = ((Number) args[1]).doubleValue();
-            double pr1 = ((Number) args[2]).doubleValue();
-            double pe1 = ((Number) args[3]).doubleValue();
-            double pi1 = ((Number) args[4]).doubleValue();
-            double rf1 = ((Number) args[5]).doubleValue();
-            double rr1 = ((Number) args[6]).doubleValue();
-            double re1 = ((Number) args[7]).doubleValue();
-            double rs1 = ((Number) args[8]).doubleValue();
-            double tec1 = ((Number) args[9]).doubleValue();
+            int i = 0;
+            int pop1 = ((Number) args[i++]).intValue();
+            double pf1 = ((Number) args[i++]).doubleValue();
+            double pr1 = ((Number) args[i++]).doubleValue();
+            double pe1 = ((Number) args[i++]).doubleValue();
+            double ph1 = ((Number) args[i++]).doubleValue();
+            double pi1 = ((Number) args[i++]).doubleValue();
+            double rf1 = ((Number) args[i++]).doubleValue();
+            double rr1 = ((Number) args[i++]).doubleValue();
+            double re1 = ((Number) args[i++]).doubleValue();
+            double rh1 = ((Number) args[i++]).doubleValue();
+            double rs1 = ((Number) args[i++]).doubleValue();
+            double tec1 = ((Number) args[i++]).doubleValue();
 
-            int pop2 = ((Number) args[10]).intValue();
-            double pf2 = ((Number) args[11]).doubleValue();
-            double pr2 = ((Number) args[12]).doubleValue();
-            double pe2 = ((Number) args[13]).doubleValue();
-            double pi2 = ((Number) args[14]).doubleValue();
-            double rf2 = ((Number) args[15]).doubleValue();
-            double rr2 = ((Number) args[16]).doubleValue();
-            double re2 = ((Number) args[17]).doubleValue();
-            double rs2 = ((Number) args[18]).doubleValue();
-            double tec2 = ((Number) args[19]).doubleValue();
+            int pop2 = ((Number) args[i++]).intValue();
+            double pf2 = ((Number) args[i++]).doubleValue();
+            double pr2 = ((Number) args[i++]).doubleValue();
+            double pe2 = ((Number) args[i++]).doubleValue();
+            double ph2 = ((Number) args[i++]).doubleValue();
+            double pi2 = ((Number) args[i++]).doubleValue();
+            double rf2 = ((Number) args[i++]).doubleValue();
+            double rr2 = ((Number) args[i++]).doubleValue();
+            double re2 = ((Number) args[i++]).doubleValue();
+            double rh2 = ((Number) args[i++]).doubleValue();
+            double rs2 = ((Number) args[i++]).doubleValue();
+            double tec2 = ((Number) args[i++]).doubleValue();
+
             return Arguments.of(
-                    new Status(pop1, pf1, pr1, pe1, pi1, rf1, rr1, re1, rs1, tec1),
-                    new Status(pop2, pf2, pr2, pe2, pi2, rf2, rr2, re2, rs2, tec2),
+                    new Status(pop1, pf1, pr1, pe1, ph1, pi1, rf1, rr1, re1, rh1, rs1, tec1),
+                    new Status(pop2, pf2, pr2, pe2, ph2, pi2, rf2, rr2, re2, rh2, rs2, tec2),
                     new Status(pop1 + pop2,
                             pf1 + pf2,
                             pr1 + pr2,
                             pe1 + pe2,
+                            ph1 + ph2,
                             pi1 + pi2,
                             rf1 + rf2,
                             rr1 + rr2,
                             re1 + re2,
+                            rh1 + rh2,
                             rs1 + rs2,
                             tec1 + tec2));
         });
