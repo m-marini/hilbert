@@ -4,7 +4,7 @@ title: Resources
 type: object
 properties:
   version:
-    const: "0.1"
+    const: "1.0"
   seed:
     multipleOf: 1
     minimum: 0
@@ -40,19 +40,6 @@ properties:
       - demand
       - deathTimeConstant
       - birthTimeConstant
-  education:
-    type: object
-    properties:
-      productivity:
-        exclusiveMinimum: 0
-      demand:
-        exclusiveMinimum: 0
-      timeConstant:
-        exclusiveMinimum: 0
-    required:
-      - productivity
-      - demand
-      - timeConstant
   research:
     type: object
     properties:
@@ -66,6 +53,35 @@ properties:
       - productivity
       - cost
       - quantum
+  education:
+    type: object
+    properties:
+      productivity:
+        exclusiveMinimum: 0
+      demand:
+        exclusiveMinimum: 0
+      timeConstant:
+        exclusiveMinimum: 0
+    required:
+      - productivity
+      - demand
+      - timeConstant
+  health:
+    type: object
+    properties:
+      productivity:
+        exclusiveMinimum: 0
+      demand:
+        exclusiveMinimum: 0
+      minimumLifeExpectancy:
+        exclusiveMinimum: 0
+      maximumLifeExpectancy:
+        exclusiveMinimum: 0
+    required:
+      - productivity
+      - demand
+      - minimumLifeExpectancy
+      - maximumLifeExpectancy
 required:
   - version
   - timeInterval
@@ -73,6 +89,7 @@ required:
   - resources
   - overSettlement
   - foodProduction
-  - education
   - research
+  - education
+  - health
 

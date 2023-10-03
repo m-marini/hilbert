@@ -77,13 +77,12 @@ public class RulesSerde {
                 loadOverSettlementRule(node, random),
                 loadFoodProductionRule(node, random),
                 loadResearchRule(node, random),
-                loadEducationRule(node, random)
+                loadEducationRule(node, random),
+                loadHealthRule(node, random)
         );
         UnaryOperator<Status> normalize = loadNormalizationRule(node);
         double dt = loadTimeInterval(node);
-        // Load demography
         return status -> {
-            // Creates the demography
             // Apply the rules
             Supplier<Collection<Tuple2<String, Number>>> initKpi = status::getKpi;
             List<Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> partials = Stream.concat(
@@ -128,6 +127,23 @@ public class RulesSerde {
         double birthTimeConstant = foodNode.path("birthTimeConstant").asDouble();
         double resources = loadResources(node);
         return HilbertRules.foodProductionRule(random, resources, productivity, demand, deathTimeConstant, birthTimeConstant);
+    }
+
+
+    /**
+     * Returns the food production rule
+     *
+     * @param node   the json main node
+     * @param random the random number generator
+     */
+    static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> loadHealthRule(JsonNode node, ExtRandom random) {
+        JsonNode healthNode = node.path("health");
+        double productivity = healthNode.path("productivity").asDouble();
+        double demand = healthNode.path("demand").asDouble();
+        double minimumLifeExpectancy = healthNode.path("minimumLifeExpectancy").asDouble();
+        double maximumLifeExpectancy = healthNode.path("maximumLifeExpectancy").asDouble();
+        double resources = loadResources(node);
+        return HilbertRules.healthRule(random, resources, productivity, demand, minimumLifeExpectancy, maximumLifeExpectancy);
     }
 
     static UnaryOperator<Status> loadNormalizationRule(JsonNode node) {

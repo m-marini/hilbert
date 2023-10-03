@@ -51,16 +51,16 @@ class HilbertRulesTest {
     void educationRuleOverEducation() {
         int educators = 100;
         int others = 10;
-        int population = educators + 3 * others;
+        int population = educators + 4 * others;
         double education = 100;
         double otherRes = 10;
-        double resources = education + 3 * otherRes;
+        double resources = education + 4 * otherRes;
         double eff = 0.5; // 1 - exp(-technology)
 
         double technology = -log(1 - eff); // -log(1-eff)
         Status status0 = Status.create(
-                others, others, educators, others,
-                otherRes, otherRes, education, otherRes,
+                others, others, educators, others, others,
+                otherRes, otherRes, education, otherRes, otherRes,
                 technology);
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(200); // 3 dead's
@@ -91,16 +91,16 @@ class HilbertRulesTest {
     void educationRuleUnderEducation() {
         int educators = 100;
         int others = 10;
-        int population = educators + 3 * others;
+        int population = educators + 4 * others;
         double education = 100;
         double otherRes = 10;
-        double resources = education + 3 * otherRes;
+        double resources = education + 4 * otherRes;
         double eff = 0.5; // 1 - exp(-technology)
 
         double technology = -log(1 - eff); // -log(1-eff)
         Status status0 = Status.create(
-                others, others, educators, others,
-                otherRes, otherRes, education, otherRes,
+                others, others, educators, others, others,
+                otherRes, otherRes, education, otherRes, otherRes,
                 technology);
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3); // 3 dead's
@@ -134,16 +134,16 @@ class HilbertRulesTest {
     void foodProductionRuleBirth() {
         int farmers = 70;
         int others = 10;
-        int population = farmers + 3 * others;
+        int population = farmers + 4 * others;
         double food = 100;
         double otherRes = 10;
-        double resources = food + 3 * otherRes;
+        double resources = food + 4 * otherRes;
         double eff = 0.5; // 1 - exp(-technology)
 
         double technology = -log(1 - eff); // -log(1-eff)
         Status status0 = Status.create(
-                farmers, others, others, others,
-                food, otherRes, otherRes, otherRes,
+                farmers, others, others, others, others,
+                food, otherRes, otherRes, otherRes, otherRes,
                 technology);
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3); // 3 dead's
@@ -166,15 +166,15 @@ class HilbertRulesTest {
 
         // Then ...
         assertEquals(Status.population(3), delta._1);
-        verify(random, only()).nextPoisson(lambda);
+        verify(random, only()).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
         assertThat(kpi, containsInAnyOrder(
                 Matchers.<String, Number>tupleOf("deathsS", 0),
                 Matchers.<String, Number>tupleOf("births", 3),
-                tupleOf("kf", kf),
-                tupleOf("kfPop", kfPop),
-                tupleOf("kfRes", kfRes),
                 tupleOf("lambdaS", 0d),
-                tupleOf("lambdaB", lambda)
+                tupleOf(equalTo("lambdaB"), closeTo(lambda, 1e-6)),
+                tupleOf(equalTo("kf"), closeTo(kf, 1e-6)),
+                tupleOf(equalTo("kfPop"), closeTo(kfPop, 1e-6)),
+                tupleOf(equalTo("kfRes"), closeTo(kfRes, 1e-6))
         ));
     }
 
@@ -182,16 +182,16 @@ class HilbertRulesTest {
     void foodProductionRuleFamine() {
         int farmers = 70;
         int others = 10;
-        int population = farmers + 3 * others;
+        int population = farmers + 4 * others;
         double food = 100;
         double otherRes = 10;
-        double resources = food + 3 * otherRes;
+        double resources = food + 4 * otherRes;
         double eff = 0.5; // 1 - exp(-technology)
 
         double technology = -log(1 - eff); // -log(1-eff)
         Status status0 = Status.create(
-                farmers, others, others, others,
-                food, otherRes, otherRes, otherRes,
+                farmers, others, others, others, others,
+                food, otherRes, otherRes, otherRes, otherRes,
                 technology);
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3); // 3 dead's
@@ -214,15 +214,109 @@ class HilbertRulesTest {
 
         // Then ...
         assertEquals(Status.population(-3), delta._1);
-        verify(random, only()).nextPoisson(lambda);
+        verify(random, only()).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
         assertThat(kpi, containsInAnyOrder(
                 Matchers.<String, Number>tupleOf("deathsS", -3),
                 Matchers.<String, Number>tupleOf("births", 0),
-                Matchers.tupleOf("kf", kf),
-                Matchers.tupleOf("kfPop", kfPop),
-                Matchers.tupleOf("kfRes", kfRes),
-                Matchers.tupleOf("lambdaS", lambda),
-                Matchers.tupleOf("lambdaB", 0d)
+                tupleOf(equalTo("kf"), closeTo(kf, 1e-6)),
+                tupleOf(equalTo("kfPop"), closeTo(kfPop, 1e-6)),
+                tupleOf(equalTo("kfRes"), closeTo(kfRes, 1e-6)),
+                tupleOf(equalTo("lambdaS"), closeTo(lambda, 1e-6)),
+                tupleOf("lambdaB", 0d)
+        ));
+    }
+
+    @Test
+    void healthRuleOverHealth() {
+        int doctors = 100;
+        int others = 10;
+        int population = doctors + 4 * others;
+        double health = 100;
+        double otherRes = 10;
+        double resources = health + 4 * otherRes;
+        double eff = 0.5; // 1 - exp(-technology)
+
+        double technology = -log(1 - eff); // -log(1-eff)
+        Status status0 = Status.create(
+                others, others, others, doctors, others,
+                otherRes, otherRes, otherRes, health, otherRes,
+                technology);
+
+        double kh = 1.5;
+        // let the education production limited only by educator (epsilonp * educators < epsilonr * education)
+        // ka = eff * min(pip * farmers, pis * food)/(pop*rho)
+        double productivity = 1;
+        double demand = eff * productivity * doctors / population / kh; // eff * pip * farmers/pop/ka
+        double timeInterval = 1;
+        double minimumLifeExpectancy = 20;
+        double maximumLifeExpectancy = 70;
+        double lifeExpectancy = maximumLifeExpectancy;
+        double lambda = population * timeInterval / lifeExpectancy;
+
+        ExtRandom random = Mockito.mock();
+        when(random.nextPoisson(anyDouble())).thenReturn(0); // 0 dead's
+
+        // When ...
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.healthRule(random, resources, productivity, demand, minimumLifeExpectancy, maximumLifeExpectancy);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
+
+        // Then ...
+        assertEquals(Status.population(0), delta._1);
+        verify(random).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
+
+        assertThat(kpi, containsInAnyOrder(
+                Matchers.<String, Number>tupleOf("deathsH", 0),
+                tupleOf(equalTo("lifeExpectancy"), closeTo(lifeExpectancy, 1e-6)),
+                tupleOf(equalTo("lambdaH"), closeTo(lambda, 1e-6)),
+                tupleOf(equalTo("kh"), closeTo(kh, 1e-6))
+        ));
+    }
+
+    @Test
+    void healthRuleUnderHealth() {
+        int doctors = 100;
+        int others = 10;
+        int population = doctors + 4 * others;
+        double health = 100;
+        double otherRes = 10;
+        double resources = health + 4 * otherRes;
+        double eff = 0.5; // 1 - exp(-technology)
+
+        double technology = -log(1 - eff); // -log(1-eff)
+        Status status0 = Status.create(
+                others, others, others, doctors, others,
+                otherRes, otherRes, otherRes, health, otherRes,
+                technology);
+
+        double kh = 0.5;
+        // let the education production limited only by educator (epsilonp * educators < epsilonr * education)
+        // ka = eff * min(pip * farmers, pis * food)/(pop*rho)
+        double productivity = 1;
+        double demand = eff * productivity * doctors / population / kh; // eff * pip * farmers/pop/ka
+        double timeInterval = 1;
+        double minimumLifeExpectancy = 20;
+        double maximumLifeExpectancy = 70;
+        double lifeExpectancy = (maximumLifeExpectancy - minimumLifeExpectancy) * kh + minimumLifeExpectancy;
+        double lambda = population * timeInterval / lifeExpectancy;
+
+        ExtRandom random = Mockito.mock();
+        when(random.nextPoisson(anyDouble())).thenReturn(3); // 3 dead's
+
+        // When ...
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.healthRule(random, resources, productivity, demand, minimumLifeExpectancy, maximumLifeExpectancy);
+        Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
+        Collection<Tuple2<String, Number>> kpi = delta._2.get();
+
+        // Then ...
+        assertEquals(Status.population(-3), delta._1);
+        verify(random).nextPoisson(MockitoHamcrest.doubleThat(closeTo(lambda, 1e-6)));
+
+        assertThat(kpi, containsInAnyOrder(
+                Matchers.<String, Number>tupleOf("deathsH", -3),
+                tupleOf(equalTo("lifeExpectancy"), closeTo(lifeExpectancy, 1e-6)),
+                tupleOf(equalTo("lambdaH"), closeTo(lambda, 1e-6)),
+                tupleOf(equalTo("kh"), closeTo(kh, 1e-6))
         ));
     }
 
@@ -232,16 +326,17 @@ class HilbertRulesTest {
         // a population under the max density
         double settlement = 50;
         int otherRes = 10;
+        int others = 20;
         Status status0 = Status.create(
-                25, 25, 25, 25,
-                otherRes, otherRes, otherRes, settlement,
+                others, others, others, others, others,
+                otherRes, otherRes, otherRes, otherRes, settlement,
                 0);
-        double population = 100;
+        double population = others * 5;
         double deathTimeConstant = 1;
         double density = 2;
         double pop = population / deathTimeConstant;
         double maxPop = settlement * density / deathTimeConstant;
-        double resources = otherRes * 3 + settlement;
+        double resources = otherRes * 4 + settlement;
 
         // When ...
         BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(new ExtRandom(), resources, density, deathTimeConstant);
@@ -253,9 +348,9 @@ class HilbertRulesTest {
 
         assertThat(kpi, containsInAnyOrder(
                 Matchers.<String, Number>tupleOf("deathsO", 0),
-                tupleOf("maxPopO", maxPop),
-                tupleOf("popO", pop),
-                tupleOf("lambdaO", 0d)
+                tupleOf(equalTo("maxPopO"), closeTo(maxPop, 1e-6)),
+                tupleOf(equalTo("popO"), closeTo(pop, 1e-6)),
+                tupleOf(equalTo("lambdaO"), closeTo(0, 1e-6))
         ));
     }
 
@@ -264,11 +359,16 @@ class HilbertRulesTest {
         // Given
         // over settlement population by 10 individuals
         // and a death ratio of 0.5
-        int population = 100;
+        int others = 25;
+        int population = others * 5;
+
         double settlement = 25;
+        double otherRes = 25;
+        double resources = settlement + 4 * otherRes;
+
         Status status0 = Status.create(
-                25, 25, 25, 25,
-                25, 25, 25, settlement,
+                others, others, others, others, others,
+                otherRes, otherRes, otherRes, otherRes, settlement,
                 0);
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3); // 3 dead's
@@ -280,7 +380,7 @@ class HilbertRulesTest {
         double maxPop = settlement * density * timeInterval / deathTimeConstant;
 
         // When ...
-        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(random, 100, density, deathTimeConstant);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(random, resources, density, deathTimeConstant);
         Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
         Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
@@ -290,20 +390,25 @@ class HilbertRulesTest {
 
         assertThat(kpi, containsInAnyOrder(
                 Matchers.<String, Number>tupleOf("deathsO", -3),
-                tupleOf("maxPopO", maxPop),
-                tupleOf("popO", pop),
-                tupleOf("lambdaO", lambda)
+                tupleOf(equalTo("maxPopO"), closeTo(maxPop, 1e-6)),
+                tupleOf(equalTo("popO"), closeTo(pop, 1e-6)),
+                tupleOf(equalTo("lambdaO"), closeTo(lambda, 1e-6))
         ));
     }
 
     @Test
     void overSettlementNoDeath() {
         double settlement = 25;
+        int others = 25;
+        double otherRes = 25;
         Status status0 = Status.create(
-                25, 25, 25, 25,
-                25, 25, 25, settlement,
+                others, others, others, others, others,
+                otherRes, otherRes, otherRes, otherRes, settlement,
                 0);
-        int population = 25 * 4;
+        int population = others * 5;
+
+        double resources = settlement + 4 * otherRes;
+
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(0); // 0 dead's
         double density = 10;
@@ -314,7 +419,7 @@ class HilbertRulesTest {
         double maxPop = settlement * density * timeInterval / deathTimeConstant;
 
         // When ...
-        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(random, 100, density, deathTimeConstant);
+        BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> rule = HilbertRules.overSettlement(random, resources, density, deathTimeConstant);
         Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>> delta = rule.apply(status0, timeInterval);
         Collection<Tuple2<String, Number>> kpi = delta._2.get();
 
@@ -324,9 +429,9 @@ class HilbertRulesTest {
 
         assertThat(kpi, containsInAnyOrder(
                 Matchers.<String, Number>tupleOf("deathsO", 0),
-                tupleOf("maxPopO", maxPop),
-                tupleOf("popO", pop),
-                tupleOf("lambdaO", lambda)
+                tupleOf(equalTo("maxPopO"), closeTo(maxPop, 1e-6)),
+                tupleOf(equalTo("popO"), closeTo(pop, 1e-6)),
+                tupleOf(equalTo("lambdaO"), closeTo(lambda, 1e-6))
         ));
     }
 
@@ -342,8 +447,8 @@ class HilbertRulesTest {
         double technology = -log(1 - eff); // -log(1-eff)
 
         Status status0 = Status.create(
-                others, researchers, others, others,
-                otherRes, research, otherRes, otherRes,
+                others, researchers, others, others, others,
+                otherRes, research, otherRes, otherRes, otherRes,
                 technology);
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3); // 3 dead's
@@ -374,14 +479,14 @@ class HilbertRulesTest {
         int others = 100;
         double research = 10;
         double otherRes = 1;
-        double resources = research + 3 * otherRes;
+        double resources = research + 4 * otherRes;
 
         double eff = 0.5; // 1 - exp(-technology)
         double technology = -log(1 - eff); // -log(1-eff)
 
         Status status0 = Status.create(
-                others, researchers, others, others,
-                otherRes, research, otherRes, otherRes,
+                others, researchers, others, others, others,
+                otherRes, research, otherRes, otherRes, otherRes,
                 technology);
         ExtRandom random = Mockito.mock();
         when(random.nextPoisson(anyDouble())).thenReturn(3); // 3 dead's

@@ -46,15 +46,17 @@ class StatusSerdeTest {
         // Given ...
         JsonNode jsonNode = Utils.fromText(TestFunctions.text(
                 "---",
-                "version: \"0.1\"",
+                "version: \"1.0\"",
                 "population: 100",
                 "farmerPrefs: -3",
                 "researcherPrefs: -1",
                 "educatorPrefs: 1",
+                "doctorPrefs: 1",
                 "inactivePrefs: 3",
                 "foodPrefs: -3",
                 "researchPrefs: -1",
                 "educationPrefs: 1",
+                "healthPrefs: 1",
                 "settlementPrefs: 3",
                 "technology: 0.01"
         ));
@@ -66,10 +68,12 @@ class StatusSerdeTest {
         assertEquals(-3, status.getFarmerPrefs());
         assertEquals(-1, status.getResearcherPrefs());
         assertEquals(1, status.getEducatorPrefs());
+        assertEquals(1, status.getDoctorPrefs());
         assertEquals(3, status.getInactivePrefs());
         assertEquals(-3, status.getFoodPrefs());
         assertEquals(-1, status.getResearchPrefs());
         assertEquals(1, status.getEducationPrefs());
+        assertEquals(1, status.getHealthPrefs());
         assertEquals(3, status.getSettlementPrefs());
         assertEquals(0.01, status.getTechnology());
     }
@@ -80,13 +84,16 @@ class StatusSerdeTest {
         int farmers = 1;
         int researchers = 2;
         int educators = 3;
-        int inactive = 4;
-        double food = 5;
-        double research = 6;
-        double education = 7;
-        double settlement = 8;
+        int doctors = 4;
+        int inactive = 5;
+        double food = 6;
+        double research = 7;
+        double education = 8;
+        double health = 9;
+        double settlement = 10;
         double technology = 0.5;
-        Status status0 = Status.create(farmers, researchers, educators, inactive, food, research, education, settlement, technology);
+        Status status0 = Status.create(farmers, researchers, educators, doctors, inactive,
+                food, research, education, health, settlement, technology);
 
         // When ...
         StatusSerde.write(new File(TEST_YML), status0);

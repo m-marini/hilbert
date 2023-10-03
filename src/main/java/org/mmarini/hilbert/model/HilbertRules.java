@@ -127,6 +127,39 @@ public class HilbertRules {
     }
 
     /**
+     * Returns the health rule
+     * It generates random natural deaths status changes
+     *
+     * @param random                the random number generator
+     * @param resources             the total resources
+     * @param productivity          the health productivity
+     * @param demand                the health demand
+     * @param minimumLifeExpectancy the minimum life expectancy
+     * @param maximumLifeExpectancy the maximum life expectancy
+     */
+    public static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> healthRule(ExtRandom random, double resources, double productivity, double demand, double minimumLifeExpectancy, double maximumLifeExpectancy) {
+        return (status, dt) -> {
+            int population = status.getPopulation();
+            double doctors = status.getDoctors();
+            double health = status.getHealthRatio();
+            double eff = status.getEfficiency();
+
+            double kh = eff * min(doctors * productivity, resources * health) / population / demand;
+            double lifeExpectancy = (maximumLifeExpectancy - minimumLifeExpectancy) * min(kh, 1) + minimumLifeExpectancy;
+            double lambda = population * dt / lifeExpectancy;
+            int deaths = lambda > 0 ? random.nextPoisson(lambda) : 0;
+
+            Supplier<Collection<Tuple2<String, Number>>> kpi = () -> List.of(
+                    Tuple2.of("deathsH", -deaths),
+                    Tuple2.of("kh", kh),
+                    Tuple2.of("lambdaH", lambda),
+                    Tuple2.of("lifeExpectancy", lifeExpectancy)
+            );
+            return Tuple2.of(Status.population(-deaths), kpi);
+        };
+    }
+
+    /**
      * Returns the over settlement rule
      * It generates random over settlement status changes
      * The over settlement happens when population exceeds the preferred density by settlement resource
@@ -137,12 +170,11 @@ public class HilbertRules {
      * @param deathTimeConstant the deaths time constant
      */
     public static BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>> overSettlement(ExtRandom random, double resources, double density, double deathTimeConstant) {
-        double deathsOver = resources * density / deathTimeConstant;
         return (status, dt) -> {
             // Computes the over settlement deaths
             int population = status.getPopulation();
             double settlementRatio = status.getSettlementRatio();
-            double maxPop = settlementRatio * deathsOver * dt;
+            double maxPop = settlementRatio * resources * density / deathTimeConstant * dt;
             double pop = population / deathTimeConstant * dt;
             double lambda = max(0, pop - maxPop);
             logger.atDebug().log("overSettlement: lambda={}  maxPop={} pop={}",

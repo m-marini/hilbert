@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased] yyyy-mm-dd
 
+### Added
+
+- Issue #8: Add life expectancy (health)
+
 ## [0.0.1] 2023-10-01
 
 ### Added
