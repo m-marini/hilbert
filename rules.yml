@@ -27,7 +27,7 @@ education:
   timeConstant: 0.4
 
 health:
-  productivity: 3.333
+  productivity: 33.333
   demand: 1
   minimumLifeExpectancy: 20
   maximumLifeExpectancy: 100
