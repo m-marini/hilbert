@@ -33,6 +33,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.mmarini.Tuple2;
+import org.mmarini.hilbert.Messages;
 import org.mmarini.hilbert.model.CSVWriter;
 import org.mmarini.hilbert.model.RulesSerde;
 import org.mmarini.hilbert.model.Status;
@@ -82,7 +83,7 @@ public class Simulate {
     private static ArgumentParser createParser() {
         ArgumentParser parser = ArgumentParsers.newFor(Simulate.class.getName()).build()
                 .defaultHelp(true)
-                .version("?")
+                .version(Messages.getString("Hilbert.version"))
                 .description("Run a session of simulation.");
         parser.addArgument("-v", "--version")
                 .action(Arguments.version())
