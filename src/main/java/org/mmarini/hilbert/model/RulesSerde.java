@@ -76,9 +76,9 @@ public class RulesSerde {
         List<BiFunction<Status, Double, Tuple2<Status, Supplier<Collection<Tuple2<String, Number>>>>>> rules = List.of(
                 loadOverSettlementRule(node, random),
                 loadFoodProductionRule(node, random),
+                loadHealthRule(node, random),
                 loadResearchRule(node, random),
-                loadEducationRule(node, random),
-                loadHealthRule(node, random)
+                loadEducationRule(node, random)
         );
         UnaryOperator<Status> normalize = loadNormalizationRule(node);
         double dt = loadTimeInterval(node);
