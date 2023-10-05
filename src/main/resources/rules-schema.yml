@@ -10,6 +10,8 @@ properties:
     minimum: 0
   minTechnology:
     minimum: 0
+  maxTechnology:
+    minimum: 0
   timeInterval:
     exclusiveMinimum: 0
   resources:

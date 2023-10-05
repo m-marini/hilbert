@@ -148,7 +148,8 @@ public class RulesSerde {
 
     static UnaryOperator<Status> loadNormalizationRule(JsonNode node) {
         double minTechnology = node.path("minTechnology").asDouble();
-        return status -> status.normalize(minTechnology);
+        double maxTechnology = node.path("maxTechnology").asDouble(Double.POSITIVE_INFINITY);
+        return status -> status.normalize(minTechnology, maxTechnology);
     }
 
     /**

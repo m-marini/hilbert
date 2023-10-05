@@ -33,8 +33,7 @@ import org.mmarini.Tuple2;
 import java.util.*;
 import java.util.stream.DoubleStream;
 
-import static java.lang.Math.expm1;
-import static java.lang.Math.max;
+import static java.lang.Math.*;
 import static java.lang.String.format;
 import static org.mmarini.hilbert.model.ExtMath.invSoftmax;
 import static org.mmarini.hilbert.model.ExtMath.softmax;
@@ -375,8 +374,9 @@ public class Status {
      * Returns the normalized status
      *
      * @param minTechnology the minimum level of technology
+     * @param maxTechnology
      */
-    public Status normalize(double minTechnology) {
+    public Status normalize(double minTechnology, double maxTechnology) {
         double minPopPrefs = DoubleStream.of(farmerPrefs, researcherPrefs, educatorPrefs, inactivePrefs).min().orElseThrow();
         double maxPopPrefs = DoubleStream.of(farmerPrefs, researcherPrefs, educatorPrefs, inactivePrefs).max().orElseThrow();
         double minResPrefs = DoubleStream.of(foodPrefs, researchPrefs, educationPrefs, settlementPrefs).min().orElseThrow();
@@ -384,7 +384,7 @@ public class Status {
         double popRefsOffset = (maxPopPrefs + minPopPrefs) / 2;
         double resRefsOffset = (maxResPrefs + minResPrefs) / 2;
         int newPopulation = max(0, population);
-        double newTechnology = max(minTechnology, technology);
+        double newTechnology = min(max(minTechnology, technology), maxTechnology);
         return newPopulation != population
                 || newTechnology != technology
                 || popRefsOffset != 0

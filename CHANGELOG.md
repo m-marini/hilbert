@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased] yyyy-mm-dd
 
+## [0.1.0] 2023-10-05
+
 ### Changed
 
 - Issue #12: Wrong initial status, added more charts.
@@ -14,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Issue #8: Add life expectancy (health).
+- Issue #14: Add technology upper limit
 
 ## [0.0.1] 2023-10-01
 
