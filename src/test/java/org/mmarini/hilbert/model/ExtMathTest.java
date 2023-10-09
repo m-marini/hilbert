@@ -30,9 +30,41 @@ package org.mmarini.hilbert.model;
 import org.junit.jupiter.api.Test;
 
 import static java.lang.Math.log;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ExtMathTest {
+
+    @Test
+    void digitFloor() {
+        // Given ...
+        // When ...
+        double zero = ExtMath.digitFloor(0d, 4);
+        double negZero = ExtMath.digitFloor(-0d, 4);
+        double one = ExtMath.digitFloor(1d, 4);
+        double negOne = ExtMath.digitFloor(-1d, 4);
+
+        double num1_23456789 = ExtMath.digitFloor(1.23456789d, 4);
+        double num1234_56789 = ExtMath.digitFloor(1234.56789d, 4);
+        double num999_99999 = ExtMath.digitFloor(999.99999d, 4);
+        double num1_23456789e29 = ExtMath.digitFloor(1.23456789e29, 4);
+
+
+        assertEquals(0d, zero);
+        assertEquals(-0d, negZero);
+        assertEquals(1d, one);
+        assertEquals(-1d, negOne);
+
+        assertEquals(1.234d, num1_23456789);
+
+        assertThat(num1234_56789, closeTo(1234d, 1e-10));
+
+        assertEquals(999.9d, num999_99999);
+
+        assertThat(num1_23456789e29, closeTo(1.234e29, 1e-10));
+    }
 
     @Test
     void invSoftmax() {

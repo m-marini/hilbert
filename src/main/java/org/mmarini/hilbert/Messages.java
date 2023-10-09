@@ -32,6 +32,8 @@ import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import static java.lang.String.format;
+
 /**
  * Messages decoder
  */
@@ -40,13 +42,14 @@ public class Messages {
     public static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle
             .getBundle(Messages.class.getPackageName() + ".messages");
 
-    public static String getString(String key) {
-        return getStringOpt(key).orElse('!' + key + '!');
+    public static String getString(String key, Object... args) {
+        return getStringOpt(key, args).orElse('!' + key + '!');
     }
 
-    public static Optional<String> getStringOpt(String key) {
+    public static Optional<String> getStringOpt(String key, Object... args) {
         try {
-            return Optional.of(RESOURCE_BUNDLE.getString(key));
+            return Optional.of(RESOURCE_BUNDLE.getString(key))
+                    .map(msg -> format(msg, args));
         } catch (MissingResourceException e) {
             return Optional.empty();
         }

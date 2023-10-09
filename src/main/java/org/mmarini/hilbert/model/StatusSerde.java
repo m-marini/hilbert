@@ -57,6 +57,16 @@ public class StatusSerde {
     }
 
     /**
+     * Returns the society from yaml resource
+     *
+     * @param file the yaml resource
+     * @throws IOException in case of error
+     */
+    public static Status fromFile(File file) throws IOException {
+        return fromJson(Utils.fromFile(file));
+    }
+
+    /**
      * Returns the society and the ule engine from json node
      *
      * @param node the json node

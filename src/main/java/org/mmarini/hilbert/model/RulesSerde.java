@@ -33,6 +33,7 @@ import org.mmarini.yaml.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -58,6 +59,16 @@ public class RulesSerde {
      * @throws IOException in case of error
      */
     public static Function<Status, Tuple2<Status, Supplier<Map<String, Number>>>> fromFile(String file) throws IOException {
+        return fromJson(Utils.fromFile(file));
+    }
+
+    /**
+     * Returns the society from yaml resource
+     *
+     * @param file the yaml resource
+     * @throws IOException in case of error
+     */
+    public static Function<Status, Tuple2<Status, Supplier<Map<String, Number>>>> fromFile(File file) throws IOException {
         return fromJson(Utils.fromFile(file));
     }
 

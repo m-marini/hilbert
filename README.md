@@ -7,7 +7,7 @@ The command arguments are
 
 ```
 usage: org.mmarini.hilbert.apps.Simulate
-       [-h] [-v] [-r RULES] [-s STATUS] [-k KPIS] [-o OUTPUT]
+       [-h] [-v] [-r RULES] [-s STATUS] [-k KPIS] [-b] [-o OUTPUT]
        [-n NUMBER]
 
 Run a session of simulation.
@@ -20,12 +20,12 @@ named arguments:
   -s STATUS, --status STATUS
                          specify status yaml file (default: status.yml)
   -k KPIS, --kpis KPIS   specify kpis csv file
+  -b, --batch            specify batch mode (default: false)
   -o OUTPUT, --output OUTPUT
                          specify output yaml file (default: output.yml)
   -n NUMBER, --number NUMBER
                          specify   the   maximum   number   of   iterations
                          (default: 10000)
-
 ```
 
 ## Octave

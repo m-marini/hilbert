@@ -303,6 +303,13 @@ public class Status {
     }
 
     /**
+     * Returns the inactive number of individuals
+     */
+    public double getInactives() {
+        return population - getFarmers() - getResearchers() - getEducators() - getDoctors();
+    }
+
+    /**
      * Returns the kpis of the status
      */
     public Collection<Tuple2<String, Number>> getKpi() {
@@ -374,7 +381,7 @@ public class Status {
      * Returns the normalized status
      *
      * @param minTechnology the minimum level of technology
-     * @param maxTechnology
+     * @param maxTechnology the maximum level of technology
      */
     public Status normalize(double minTechnology, double maxTechnology) {
         double minPopPrefs = DoubleStream.of(farmerPrefs, researcherPrefs, educatorPrefs, inactivePrefs).min().orElseThrow();
