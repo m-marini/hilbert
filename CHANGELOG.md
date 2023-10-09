@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased] yyyy-mm-dd
 
+## [0.1.1] 2023-10-09
+
+### Added
+
+- Issue #21: Add GUI
+
 ### Changed
 
 - Issue #19: Fixed logger

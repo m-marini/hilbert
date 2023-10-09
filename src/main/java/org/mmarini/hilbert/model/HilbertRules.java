@@ -103,7 +103,7 @@ public class HilbertRules {
             double kfRes = eta * foodRatio * resources / pop / demand;
             double kf = min(kfPop, kfRes);
             double lambdaDeaths = max(0, pop * (1 - kf)) * dt / deathTimeConstant;
-            int deaths = -lambdaDeaths > 0 ? random.nextPoisson(lambdaDeaths) : 0;
+            int deaths = lambdaDeaths > 0 ? -random.nextPoisson(lambdaDeaths) : 0;
 
             double lambdaBirths = max(0, pop * (kf - 1)) * dt / birthTimeConstant;
             int births = lambdaBirths > 0 ? random.nextPoisson(lambdaBirths) : 0;

@@ -29,12 +29,44 @@ package org.mmarini.hilbert.model;
 
 import java.util.Arrays;
 
+import static java.lang.Math.*;
+
 /**
  * ExtMath functions
  */
 public interface ExtMath {
     /**
-     * Returns the softmax preferences of arguments
+     * Returns the upper value with n digits to argument
+     *
+     * @param value the value
+     * @param n     the number of digits
+     */
+    static double digitCeil(double value, int n) {
+        if (abs(value) == 0) {
+            return value;
+        }
+        int exp = (int) floor(log10(abs(value)));
+        double scale = pow(10, -exp + n - 1);
+        return ceil(value * scale) / scale;
+    }
+
+    /**
+     * Returns the lower value with n digits to argument
+     *
+     * @param value the value
+     * @param n     the number of digits
+     */
+    static double digitFloor(double value, int n) {
+        if (abs(value) == 0) {
+            return value;
+        }
+        int exp = (int) floor(log10(abs(value)));
+        double scale = pow(10, -exp + n - 1);
+        return floor(value * scale) / scale;
+    }
+
+    /**
+     * Returns the inverse softmax preferences of arguments
      *
      * @param ratios the ratios
      */

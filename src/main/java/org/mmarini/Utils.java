@@ -30,8 +30,11 @@ package org.mmarini;
 
 import io.reactivex.rxjava3.core.Flowable;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
@@ -42,6 +45,17 @@ import java.util.stream.Stream;
 import static java.util.Map.entry;
 
 public interface Utils {
+
+    /**
+     * Returns the streams of concatenated streams
+     *
+     * @param streams the streams
+     * @param <T>
+     */
+    static <T> Stream<T> concat(Stream<T>... streams) {
+        return Stream.of(streams)
+                .flatMap(Function.identity());
+    }
 
     /**
      * Returns the collector of Map
@@ -92,61 +106,11 @@ public interface Utils {
     }
 
     /**
-     * Returns an integer with probability given by cdf values
-     *
-     * @param random the random generator
-     * @param cdf    the cumulative distribution function values must be monotonic increasing
-     */
-    static int nextCdf(Random random, double... cdf) {
-        assert cdf.length > 0;
-        double p = random.nextDouble() * cdf[cdf.length - 1];
-        int n = cdf.length - 1;
-        for (int i = 0; i < n; i++) {
-            if (p < cdf[i]) {
-                return i;
-            }
-        }
-        return n;
-    }
-
-    /**
-     * Returns a number with a Poisson distribution probability
-     *
-     * @param random the random generator
-     * @param lambda the mean value
-     */
-    static int nextPoison(Random random, final double lambda) {
-        int k = -1;
-        double p = 1;
-        final double l = Math.exp(-lambda);
-        do {
-            ++k;
-            p *= random.nextDouble();
-        } while (p > l);
-        return k;
-    }
-
-    /**
      * @param opt
      * @param <T>
      */
     static <T> Flowable<T> optionalToFlow(Optional<T> opt) {
         return opt.map(Flowable::just).orElse(Flowable.empty());
-    }
-
-    /**
-     * Returns the preferences from cumulative function values
-     *
-     * @param cdf the cumulative function values
-     */
-    static double[] preferences(double... cdf) {
-        int n = cdf.length;
-        double[] preferences = new double[n];
-        preferences[0] = cdf[0];
-        for (int i = 1; i < n; i++) {
-            preferences[i] = cdf[i] - cdf[i - 1];
-        }
-        return preferences;
     }
 
     /**
